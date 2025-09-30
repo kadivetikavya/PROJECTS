@@ -15,7 +15,6 @@ E-commerce website, blog platform, or any data-driven web application requiring 
 ## Data Flow & Request Processing
 <img width="1208" height="1020" alt="Screenshot 2025-09-30 113557" src="https://github.com/user-attachments/assets/b35dc98a-6263-4670-8559-f7cdc3910c3d" />
 
-
 ## Implementation Steps
 ### Step 1: VPC Setup
 1. Please log in to your AWS Account and type VPC in the AWS console. and click on VPC service.
@@ -27,35 +26,7 @@ E-commerce website, blog platform, or any data-driven web application requiring 
 7. Private Subnets → for RDS database.
 
 <img width="865" height="331" alt="image" src="https://github.com/user-attachments/assets/c42af99e-2d6d-4806-b7bb-58986e082740" /> <br> <br>
-<img width="1079" height="334" alt="image" src="https://github.com/user-attachments/assets/231480a9-e867-4288-8a3e-51ecb9079132" /> <br> # Scalable Web Application with Database
-
-## Project Overview
-Build a complete web application with a database backend, monitoring, and global content delivery.
-
-## Use Case:
-E-commerce website, blog platform, or any data-driven web application requiring global accessibility and monitoring.
-
-## AWS Services Used
-<img width="900" height="397" alt="Screenshot 2025-09-30 112701" src="https://github.com/user-attachments/assets/b62b459b-38cb-47a2-94be-75c2acb49a88" />
-
-## Architecture Diagram
-<img width="1301" height="977" alt="Screenshot 2025-09-30 113417" src="https://github.com/user-attachments/assets/8c5737d3-5b20-495e-a36a-6b7d087cb93e" />
-
-## Data Flow & Request Processing
-<img width="1208" height="1020" alt="Screenshot 2025-09-30 113557" src="https://github.com/user-attachments/assets/b35dc98a-6263-4670-8559-f7cdc3910c3d" />
-
-
-## Implementation Steps
-### Step 1: VPC Setup
-1. Please log in to your AWS Account and type VPC in the AWS console. and click on VPC service.
-2. Create VPC with CIDR 10.0.0.0/16
-3. Number of Availability Zones (AZs) 2:
-4. Create public subnet (10.0.1.0/24) and private subnet (10.0.2.0/24) in Availability Zone 1a
-5. Create public subnet (10.0.3.0/24) and private subnet (10.0.4.0/24) in Availability Zone 1b
-6. Public Subnets → for EC2 web server.
-7. Private Subnets → for RDS database.
-
-<img width="2135" height="481" alt="image" src="https://github.com/user-attachments/assets/2d3f2921-bde4-43da-a0be-3cd86fb9cd60" /> <br>
+<img width="1079" height="334" alt="image" src="https://github.com/user-attachments/assets/231480a9-e867-4288-8a3e-51ecb9079132" /> <br> 
 
 ### Step 2: Security Groups
 1. Web Server SG: Allow HTTP (80), HTTPS (443), SSH (22)
