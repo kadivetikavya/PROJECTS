@@ -18,18 +18,21 @@ E-commerce website, blog platform, or any data-driven web application requiring 
 ## Implementation Steps
 ### Step 1: VPC Setup
 1. Please log in to your AWS Account and type VPC in the AWS console. and click on VPC service.
-2. Create VPC with CIDR 10.0.0.0/16
-3. Number of Availability Zones (AZs) 2:
-4. Create public subnet (10.0.1.0/24) and private subnet (10.0.2.0/24) in Availability Zone 1A
-5. Create public subnet (10.0.3.0/24) and private subnet (10.0.4.0/24) in Availability Zone 1B
-6. Public Subnets → for EC2 web server.
-7. Private Subnets → for RDS database.
-
-<img width="865" height="331" alt="image" src="https://github.com/user-attachments/assets/c42af99e-2d6d-4806-b7bb-58986e082740" /> <br> <br>
-<img width="1079" height="334" alt="image" src="https://github.com/user-attachments/assets/231480a9-e867-4288-8a3e-51ecb9079132" /> <br> 
+2. Select "VPC and more"
+3. Create VPC with CIDR 10.0.0.0/16
+4. Number of Availability Zones (AZs) → 2:
+5. Create public subnet (10.0.1.0/24) and private subnet (10.0.2.0/24) in Availability Zone 1a
+6. Create public subnet (10.0.3.0/24) and private subnet (10.0.4.0/24) in Availability Zone 1b
+7. Configure NAT Gateways
+   NAT gateways → 1 per AZ
+8. Configure VPC Endpoints
+   VPC Endpoints → None
+9. Click on Create VPC. 
+<img width="2135" height="481" alt="Screenshot 2025-09-30 124024" src="https://github.com/user-attachments/assets/58f8100b-84ce-4c77-a74a-077b759b7a5a" /> <br>
 
 ### Step 2: Security Groups
-1. Web Server SG: Allow HTTP (80), HTTPS (443), SSH (22)
+1. Web Server SG: Allow HTTP (80), HTTPS (443), SSH (22) <br>
+
 <img width="1078" height="441" alt="image" src="https://github.com/user-attachments/assets/8a08fd2c-3645-4e20-87d7-e06b9fd247cb" /><br>
 
 ### Step 3: Create subnet group on RDS
@@ -62,13 +65,15 @@ private-sub-1b
  8. Additional Configurations
     Enable automated backups (default is 7 days).
     Multi-AZ deployment: enable if you need high availability.
- 9. Click on Create Database.
- 
+ 9. Click on Create Database. <br>
+
+ <img width="2122" height="564" alt="image" src="https://github.com/user-attachments/assets/c5cfe30a-1a53-43a8-b6ff-f047632272ea" />
+
 ### step 5: Launch EC2 Web Server
 1. Go to EC2 Service
    Open AWS Console → EC2.Click Launch instance.
 2. Name & Tags - Instance name: app-webserver.
-3. Choose AMI - Select Amazon Linux.
+3. Choose AMI - Select ubuntu.
 4. Instance Type - Choose t3.micro for better performance.
 5. Select an existing key pair or create a new one.
 6. Network Settings
@@ -91,19 +96,224 @@ After instance is running:
 ```
 ssh -i your-key.pem ec2-user@<Public-IP>
 ```
-#### 2. Update and install Apache 
+#### 2. Install apache & mysql-serverr 
 ```
-sudo yum update -y
-sudo yum install -y httpd php php-mysqlnd
-sudo systemctl start httpd
-sudo systemctl enable httpd
+sudo apt update -y
+sudo apt install -y apache2
+sudo systemctl start apache2
+sudo systemctl enable apache2
+sudo apt install -y php8.1 libapache2-mod-php8.1 php8.1-mysql
+sudo a2enmod php8.1
+sudo apt install -y mysql-server
 ```
-#### 3. Install Database Drivers
+#### 3. Start service
 ```
-sudo yum install -y mariadb
+sudo systemctl enable --now mysql
 ```
-#### 4. Test Web Server
+#### 4. Run secure setup
 ```
-echo "Hello from App Web Server!" > /var/www/html/index.html
+sudo mysql_secure_installation
 ```
-Visit http://<EC2-Public-IP> in browser → you should see the message.
+#### 5. Check status
+```
+systemctl status mysql
+```
+#### 6. Test MySQL client
+```
+mysql --version
+```
+#### 7. connect to RDS
+```
+mysql -h <RDS-ENDPOINT> -u <USERNAME> -p
+it is looks like this 
+mysql -h app-db.citw4gmew45o.us-east-1.rds.amazonaws.com -u admin -p
+then add your password
+```
+#### 8. Successful login
+```
+after successful login it looks like this
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+mysql>
+```
+#### 9. List databases
+```
+SHOW DATABASES;
+```
+#### 10. Create and Use a Database
+```
+CREATE DATABASE appdb;
+USE appdb;
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100)
+);
+SHOW DATABASES;
+SHOW TABLES; 
+```
+#### 11. Insert data
+```
+INSERT INTO users (name, email) VALUES ('Kavya', 'kavya@example.com');
+```
+
+#### 12. Query data
+```
+SELECT * FROM users;
+```
+### step 7: Create PHP file
+#### 1. Create PHP file userdata
+```
+sudo nano /var/www/html/users.php
+```
+#### 2. Paste this code
+```
+<?php
+$host = "your-rds-endpoint";  // e.g., app-db.xxxxxx.us-east-1.rds.amazonaws.com
+$user = "admin";
+$pass = "yourpassword"; // e.g.,your password
+$db   = "appdb";
+
+// Connect to RDS
+$conn = mysqli_connect($host, $user, $pass, $db);
+
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+// Fetch users
+$result = mysqli_query($conn, "SELECT * FROM users");
+
+echo "<h2>Users Table:</h2><ul>";
+while($row = mysqli_fetch_assoc($result)) {
+    echo "<li>" . $row['id'] . " - " . $row['name'] . " - " . $row['email'] . "</li>";
+}
+echo "</ul>";
+
+mysqli_close($conn);
+?>
+
+```
+#### 3: change permissions
+```
+sudo chown www-data:www-data /var/www/html/users.php
+sudo chmod 644 /var/www/html/users.php
+```
+#### 4: Test PHP Execution
+```
+sudo nano /var/www/html/info.php
+```
+#### 5: paste
+```
+<?php phpinfo(); ?>
+```
+#### 6:Visit in browser
+```
+http://<EC2-Public-IP>/info.php
+```
+<img width="1793" height="1329" alt="image" src="https://github.com/user-attachments/assets/ea6b39fd-2d2e-47a1-be62-6af2242a0a8c" /> <br>
+
+#### 7: Test in browser
+```
+http://<EC2-Public-IP>/users.php
+```
+<img width="929" height="434" alt="image" src="https://github.com/user-attachments/assets/7858b192-72ab-4694-b8ee-41bbfdaa70fe" /> <br>
+
+### step 8: S3 and Route53
+#### 1: Create S3 Bucket for Static Assets
+1. Go to AWS Console → S3 → Create bucket
+2. Bucket name: app-project-buc (must be globally unique)
+3. Region: Choose the same region as your EC2
+4. Public access settings:
+   Uncheck Block all public access
+5. Acknowledge warning
+6. Click Create bucket
+
+<img width="1044" height="270" alt="image" src="https://github.com/user-attachments/assets/aa01c8cc-d1ea-4389-9ed8-df2efe0cd43f" />
+
+#### 2: Upload Static Assets
+1. Go to your bucket → Upload → add files (images, html, CSS, JS)
+2. Here i uploaded index.html, error.html files
+
+<img width="1060" height="376" alt="image" src="https://github.com/user-attachments/assets/63294c7b-fd36-4f7e-a984-2dc5d1de2d04" />
+
+#### 3: Configure Bucket Policy for Public Read
+1. Go to Permissions → Bucket policy
+2. Paste this policy (replace app-static-assets with your bucket name):
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicRead",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::app-project-buc/*"
+        }
+    ]
+}
+```
+4. Save policy → now all files in the bucket are publicly accessible.
+5. Allow all checklist - Edit access control list (ACL)
+6. Test: https://app--project-buc.s3.amazonaws.com/index.html
+
+<img width="802" height="427" alt="image" src="https://github.com/user-attachments/assets/8cd207ac-c58f-4f49-b9b5-972c7bc1c9ea" />
+
+#### 4: Register Domain / Configure Hosted Zone in Route53
+1. Register new domain
+2. Go to Route53 → Domains → Register domain
+3. Enter domain name → follow steps to purchase
+(or)
+1. Use existing domain
+2. I have a domain in godaddy.com
+3. Go to Route53 → Hosted zones → Create hosted zone
+4. Domain name: example.com
+5. Type: Public Hosted Zone
+6. Click Create hosted zone <br>
+
+<img width="2099" height="916" alt="image" src="https://github.com/user-attachments/assets/bcf273d6-050b-48f6-bcd2-2a08f9ce1e72" />
+#### 5: change Nameservers in godaddy
+<img width="818" height="581" alt="image" src="https://github.com/user-attachments/assets/df9708b9-1729-4cd9-82e5-2dcafe546791" />
+<br>
+<img width="797" height="604" alt="image" src="https://github.com/user-attachments/assets/b673cfdd-9038-4ba3-bcba-9da306620857" />
+
+#### 6: Create A Record to Point Domain to EC2 Public IP
+1. Go to Hosted zone → Create record
+2. Record type: A – IPv4 address
+3. Name: www (so your domain is www.example.com) or leave blank for root domain
+4. Value: Enter your EC2 public IP
+5. Routing policy: Simple
+6. Save record <br>
+
+<img width="1081" height="521" alt="image" src="https://github.com/user-attachments/assets/de2b29bd-bd80-4621-9163-937c9e849209" />
+<img width="699" height="247" alt="image" src="https://github.com/user-attachments/assets/00759609-028c-42ec-b0b9-2345f2f1ba0e" />
+
+### step 9:Monitoring Setup
+#### 1. Set Up SNS Notifications
+1. Go to SNS → Topics → Create topic
+2. Type: Standard
+3. Name: CriticalAlerts
+4. Create subscription:
+   Protocol: Email
+   Endpoint: your email address
+5. Subscribe → Confirm email link
+6. In CloudWatch alarm → Select SNS topic as action <br>
+
+<img width="1072" height="418" alt="image" src="https://github.com/user-attachments/assets/b806fe67-110e-495e-a23f-6426174c5325" />
+#### 2. Create CloudWatch Alarms
+1. Go to CloudWatch → Alarms → Create Alarm
+2. Select metric:
+   EC2 → Per-Instance Metrics → CPUUtilization
+   EC2 → MemoryUtilization (requires CloudWatch Agent)
+   EC2 → DiskSpaceUtilization
+3. Set threshold:
+Example: CPU > 80% for 5 minutes
+4. Configure actions:
+   Send notification via SNS (next step)
+5. Name and create the alarm <br>
+
+<img width="2124" height="341" alt="image" src="https://github.com/user-attachments/assets/a25297b2-0c8a-49b5-be8a-aafd898f3a12" /> <br>
+
+<img width="988" height="437" alt="image" src="https://github.com/user-attachments/assets/88ac55aa-02ac-4461-861e-e0b9a69a027f" />
+
+   
