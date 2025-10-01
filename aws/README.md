@@ -213,7 +213,8 @@ http://<EC2-Public-IP>/info.php
 ```
 http://<EC2-Public-IP>/users.php
 ```
-<img width="929" height="434" alt="image" src="https://github.com/user-attachments/assets/7858b192-72ab-4694-b8ee-41bbfdaa70fe" /> <br>
+<img width="619" height="286" alt="image" src="https://github.com/user-attachments/assets/ffa67e80-91cd-4d17-9935-34b36f930e99" /> <br>
+
 
 ### Step 8: S3 and Route53
 #### 1. Create S3 Bucket for Static Assets
