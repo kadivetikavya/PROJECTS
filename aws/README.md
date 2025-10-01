@@ -3,9 +3,6 @@
 ## Project Overview
 Build a complete web application with a database backend, monitoring, and global content delivery.
 
-## Use Case:
-E-commerce website, blog platform, or any data-driven web application requiring global accessibility and monitoring.
-
 ## AWS Services Used
 <img width="900" height="397" alt="Screenshot 2025-09-30 112701" src="https://github.com/user-attachments/assets/b62b459b-38cb-47a2-94be-75c2acb49a88" />
 
@@ -69,7 +66,7 @@ private-sub-1b
 
  <img width="2122" height="564" alt="image" src="https://github.com/user-attachments/assets/c5cfe30a-1a53-43a8-b6ff-f047632272ea" />
 
-### step 5: Launch EC2 Web Server
+### Step 5: Launch EC2 Web Server
 1. Go to EC2 Service
    Open AWS Console → EC2.Click Launch instance.
 2. Name & Tags - Instance name: app-webserver.
@@ -90,7 +87,7 @@ private-sub-1b
    Click on Launch.
 <img width="2087" height="599" alt="image" src="https://github.com/user-attachments/assets/a9e70a8f-23e2-4b5e-b7ae-f9fe42302972" />
 
-### step 6: Install Web Server (Apache)
+### Step 6: Install Web Server (Apache)
 After instance is running:
 #### 1. Connect via SSH
 ```
@@ -160,7 +157,7 @@ INSERT INTO users (name, email) VALUES ('Kavya', 'kavya@example.com');
 ```
 SELECT * FROM users;
 ```
-### step 7: Create PHP file
+### Step 7: Create PHP file
 #### 1. Create PHP file userdata
 ```
 sudo nano /var/www/html/users.php
@@ -193,33 +190,33 @@ mysqli_close($conn);
 ?>
 
 ```
-#### 3: change permissions
+#### 3. change permissions
 ```
 sudo chown www-data:www-data /var/www/html/users.php
 sudo chmod 644 /var/www/html/users.php
 ```
-#### 4: Test PHP Execution
+#### 4. Test PHP Execution
 ```
 sudo nano /var/www/html/info.php
 ```
-#### 5: paste
+#### 5. paste
 ```
 <?php phpinfo(); ?>
 ```
-#### 6:Visit in browser
+#### 6. Visit in browser
 ```
 http://<EC2-Public-IP>/info.php
 ```
 <img width="1793" height="1329" alt="image" src="https://github.com/user-attachments/assets/ea6b39fd-2d2e-47a1-be62-6af2242a0a8c" /> <br>
 
-#### 7: Test in browser
+#### 7. Test in browser
 ```
 http://<EC2-Public-IP>/users.php
 ```
 <img width="929" height="434" alt="image" src="https://github.com/user-attachments/assets/7858b192-72ab-4694-b8ee-41bbfdaa70fe" /> <br>
 
-### step 8: S3 and Route53
-#### 1: Create S3 Bucket for Static Assets
+### Step 8: S3 and Route53
+#### 1. Create S3 Bucket for Static Assets
 1. Go to AWS Console → S3 → Create bucket
 2. Bucket name: app-project-buc (must be globally unique)
 3. Region: Choose the same region as your EC2
@@ -230,13 +227,13 @@ http://<EC2-Public-IP>/users.php
 
 <img width="1044" height="270" alt="image" src="https://github.com/user-attachments/assets/aa01c8cc-d1ea-4389-9ed8-df2efe0cd43f" />
 
-#### 2: Upload Static Assets
+#### 2. Upload Static Assets
 1. Go to your bucket → Upload → add files (images, html, CSS, JS)
 2. Here i uploaded index.html, error.html files
 
 <img width="1060" height="376" alt="image" src="https://github.com/user-attachments/assets/63294c7b-fd36-4f7e-a984-2dc5d1de2d04" />
 
-#### 3: Configure Bucket Policy for Public Read
+#### 3. Configure Bucket Policy for Public Read
 1. Go to Permissions → Bucket policy
 2. Paste this policy (replace app-static-assets with your bucket name):
 ```
@@ -259,7 +256,7 @@ http://<EC2-Public-IP>/users.php
 
 <img width="802" height="427" alt="image" src="https://github.com/user-attachments/assets/8cd207ac-c58f-4f49-b9b5-972c7bc1c9ea" />
 
-#### 4: Register Domain / Configure Hosted Zone in Route53
+#### 4. Register Domain / Configure Hosted Zone in Route53
 1. Register new domain
 2. Go to Route53 → Domains → Register domain
 3. Enter domain name → follow steps to purchase
@@ -272,12 +269,12 @@ http://<EC2-Public-IP>/users.php
 6. Click Create hosted zone <br>
 
 <img width="2099" height="916" alt="image" src="https://github.com/user-attachments/assets/bcf273d6-050b-48f6-bcd2-2a08f9ce1e72" />
-#### 5: change Nameservers in godaddy
+#### 5. change Nameservers in godaddy
 <img width="818" height="581" alt="image" src="https://github.com/user-attachments/assets/df9708b9-1729-4cd9-82e5-2dcafe546791" />
 <br>
 <img width="797" height="604" alt="image" src="https://github.com/user-attachments/assets/b673cfdd-9038-4ba3-bcba-9da306620857" />
 
-#### 6: Create A Record to Point Domain to EC2 Public IP
+#### 6. Create A Record to Point Domain to EC2 Public IP
 1. Go to Hosted zone → Create record
 2. Record type: A – IPv4 address
 3. Name: www (so your domain is www.example.com) or leave blank for root domain
@@ -288,7 +285,7 @@ http://<EC2-Public-IP>/users.php
 <img width="1081" height="521" alt="image" src="https://github.com/user-attachments/assets/de2b29bd-bd80-4621-9163-937c9e849209" />
 <img width="699" height="247" alt="image" src="https://github.com/user-attachments/assets/00759609-028c-42ec-b0b9-2345f2f1ba0e" />
 
-### step 9:Monitoring Setup
+### Step 9:Monitoring Setup
 #### 1. Set Up SNS Notifications
 1. Go to SNS → Topics → Create topic
 2. Type: Standard
