@@ -190,7 +190,7 @@ mysqli_close($conn);
 ?>
 
 ```
-#### 3. change permissions
+#### 3. Change permissions
 ```
 sudo chown www-data:www-data /var/www/html/users.php
 sudo chmod 644 /var/www/html/users.php
@@ -199,7 +199,7 @@ sudo chmod 644 /var/www/html/users.php
 ```
 sudo nano /var/www/html/info.php
 ```
-#### 5. paste
+#### 5. Paste
 ```
 <?php phpinfo(); ?>
 ```
@@ -252,7 +252,8 @@ http://<EC2-Public-IP>/users.php
 ```
 4. Save policy → now all files in the bucket are publicly accessible.
 5. Allow all checklist - Edit access control list (ACL)
-6. Test: https://app--project-buc.s3.amazonaws.com/index.html
+6. Test:
+   https://app-project-buc.s3.amazonaws.com/index.html
 
 <img width="802" height="427" alt="image" src="https://github.com/user-attachments/assets/8cd207ac-c58f-4f49-b9b5-972c7bc1c9ea" />
 
