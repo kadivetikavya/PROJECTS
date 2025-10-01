@@ -256,7 +256,8 @@ http://<EC2-Public-IP>/users.php
 6. Test:
    https://app-project-buc.s3.amazonaws.com/index.html
 
-<img width="802" height="427" alt="image" src="https://github.com/user-attachments/assets/8cd207ac-c58f-4f49-b9b5-972c7bc1c9ea" />
+<img width="720" height="263" alt="image" src="https://github.com/user-attachments/assets/a106426e-f927-407f-8090-a281f835633e" />
+
 
 #### 4. Register Domain / Configure Hosted Zone in Route53
 1. Register new domain
@@ -271,7 +272,9 @@ http://<EC2-Public-IP>/users.php
 6. Click Create hosted zone <br>
 
 <img width="2099" height="916" alt="image" src="https://github.com/user-attachments/assets/bcf273d6-050b-48f6-bcd2-2a08f9ce1e72" />
-#### 5. change Nameservers in godaddy
+
+#### 5. Change Nameservers in godaddy
+
 <img width="818" height="581" alt="image" src="https://github.com/user-attachments/assets/df9708b9-1729-4cd9-82e5-2dcafe546791" />
 <br>
 <img width="797" height="604" alt="image" src="https://github.com/user-attachments/assets/b673cfdd-9038-4ba3-bcba-9da306620857" />
@@ -284,10 +287,11 @@ http://<EC2-Public-IP>/users.php
 5. Routing policy: Simple
 6. Save record <br>
 
-<img width="1081" height="521" alt="image" src="https://github.com/user-attachments/assets/de2b29bd-bd80-4621-9163-937c9e849209" />
+<img width="1081" height="521" alt="image" src="https://github.com/user-attachments/assets/de2b29bd-bd80-4621-9163-937c9e849209" /> <br>
 <img width="699" height="247" alt="image" src="https://github.com/user-attachments/assets/00759609-028c-42ec-b0b9-2345f2f1ba0e" />
 
 ### Step 9:Monitoring Setup
+
 #### 1. Set Up SNS Notifications
 1. Go to SNS → Topics → Create topic
 2. Type: Standard
@@ -299,6 +303,7 @@ http://<EC2-Public-IP>/users.php
 6. In CloudWatch alarm → Select SNS topic as action <br>
 
 <img width="1072" height="418" alt="image" src="https://github.com/user-attachments/assets/b806fe67-110e-495e-a23f-6426174c5325" />
+
 #### 2. Create CloudWatch Alarms
 1. Go to CloudWatch → Alarms → Create Alarm
 2. Select metric:
