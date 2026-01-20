@@ -1,7 +1,7 @@
 # Automated Secure Software Delivery Using GitOps on AWS EKS
 
 ## Project Overview
-Designed and implemented an enterprise-grade end-to-end DevSecOps CI/CD pipeline with GitOps-driven Kubernetes deployments, integrating automated security scans and continuous delivery.
+Designed and implemented an enterprise-grade end-to-end DevSecOps CI/CD pipeline with GitOps-driven Kubernetes deployments, integrating automated security scans and continuous delivery.<br>
 This project aims to achieve the following goals:
 
 
@@ -11,9 +11,9 @@ b. Perform automated code quality checks and static analysis using SonarQube.
 
 
 ### 2. Continuous Deployment (CD):
-a. Automatically deploy applications to a Kubernetes cluster without manual effort.
-b. Use Docker to package applications so they run the same way in development, testing, and production.
-c. Manage deployment changes by updating configuration files and pushing them to Git, so every change is tracked and easy to roll back.
+a. Automatically deploy applications to a Kubernetes cluster without manual effort. <br>
+b. Use Docker to package applications so they run the same way in development, testing, and production.<br>
+c. Manage deployment changes by updating configuration files and pushing them to Git, so every change is tracked and easy to roll back.<br>
 
 ## Tech Stack Used
 <img width="1536" height="1024" alt="3 drawio" src="https://github.com/user-attachments/assets/3a1a6774-85af-49f5-95e4-43f9f3243e56" />
