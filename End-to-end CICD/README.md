@@ -17,10 +17,10 @@ b. Use Docker to package applications so they run the same way in development, t
 c. Manage deployment changes by updating configuration files and pushing them to Git, so every change is tracked and easy to roll back.<br><br>
 
 ## Tech Stack Used
-<img width="1536" height="674" alt="3 drawio" src="https://github.com/user-attachments/assets/9c55d1c7-664f-4253-b84d-ef753aeb727d" />
+<img width="1536" height="674" alt="3 drawio" src="https://github.com/user-attachments/assets/9c55d1c7-664f-4253-b84d-ef753aeb727d" /> 
 
 ## Architecture Diagram
-<img width="1853" height="541" alt="2 drawio" src="https://github.com/user-attachments/assets/482b069a-a02c-4c44-bac0-09a97751f4e7" /> <br>
+<img width="1853" height="541" alt="2 drawio" src="https://github.com/user-attachments/assets/482b069a-a02c-4c44-bac0-09a97751f4e7" /> <br> <br>
 
 
 ## Core Components and Workflow
