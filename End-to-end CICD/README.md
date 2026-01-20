@@ -6,7 +6,7 @@ This project aims to achieve the following goals:
 
 
 ### 1. Continuous Integration (CI): 
-a. Automate the process of code integration, ensuring that new code changes are seamlessly merged with the existing codebase. 
+a. Automate the process of code integration, ensuring that new code changes are seamlessly merged with the existing codebase. <br>
 b. Perform automated code quality checks and static analysis using SonarQube. 
 
 
@@ -16,7 +16,9 @@ b. Use Docker to package applications so they run the same way in development, t
 c. Manage deployment changes by updating configuration files and pushing them to Git, so every change is tracked and easy to roll back.
 
 ## Tech Stack Used
-<img width="1331" height="662" alt="drawio" src="https://github.com/user-attachments/assets/d1a3936b-11b2-49a8-b23d-31b50bf971d3" />
+<img width="1536" height="1024" alt="3 drawio" src="https://github.com/user-attachments/assets/3a1a6774-85af-49f5-95e4-43f9f3243e56" />
+
+
 
 
 ## Architecture Diagram
