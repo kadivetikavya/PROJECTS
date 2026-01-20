@@ -30,7 +30,7 @@ c. Manage deployment changes by updating configuration files and pushing them to
 4. Containerize & Scan: A Docker image is built from the application code. This image is then scanned for known vulnerabilities using Trivy.
 5. Store Artifact: If the scans pass, the validated Docker image is pushed to a container registry, such as Docker Hub.
 6. GitOps Trigger: The CI pipeline automatically updates a Kubernetes manifest file in a separate Git repository (the "Config Repo"), pointing to the new Docker image tag.
-7. Deploy & Orchestrate: Argo CD, a GitOps tool, detects the change in the Config Repo and automatically synchronizes the state of the Kubernetes cluster to match the desired state defined in the manifests, deploying the new version of the application. <br>
+7. Deploy & Orchestrate: Argo CD, a GitOps tool, detects the change in the Config Repo and automatically synchronizes the state of the Kubernetes cluster to match the desired state defined in the manifests, deploying the new version of the application. <br><br>
 
 ## Project Conclusion
 By following these phases, an organization can establish a highly automated, secure, and efficient workflow for developing and deploying containerized
