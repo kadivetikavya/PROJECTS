@@ -1,7 +1,7 @@
 # Automated Secure Software Delivery Using GitOps on AWS EKS
 
 ## Project Overview
-Designed and implemented an enterprise-grade end-to-end DevSecOps CI/CD pipeline with GitOps-driven Kubernetes deployments, integrating automated security scans and continuous delivery.<br><br>
+Designed and implemented an enterprise-grade end-to-end DevSecOps CI/CD pipeline with GitOps-driven Kubernetes deployments, integrating automated security scans and continuous delivery.<br>
 
 This project aims to achieve the following goals:
 
@@ -38,10 +38,10 @@ c. Manage deployment changes by updating configuration files and pushing them to
 3. Cloud Provider / Kubernetes Environment: Access to a Kubernetes cluster. Options include:<br>
   a. Local Development: gitbash or visual studio for local testing.<br>
   b. Cloud-Managed: Amazon Elastic Kubernetes Service (EKS) for more robust, production-like environments.<br>
-<br>
+
 ## Infrastructure and Tool Installation
-A Linux server for Jenkins , Docker, Sonarqube setup with an instance type "t2.Xlarge" <br> and a EKS Cluster to deploy container application.
-<br>
+A Linux server for Jenkins , Docker, Sonarqube setup with an instance type "t2.Xlarge" <br> and a EKS Cluster to deploy container application.<br>
+
 ### Jenkins Server Setup
 ```
 #Install jenkins on your linux system
