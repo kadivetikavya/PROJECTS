@@ -55,7 +55,6 @@ sudo systemctl enable jenkins
 sudo systemctl start jenkins
 sudo systemctl status jenkins
 ```
-<br>
 
 ### Installation & configuration of docker
 ```
@@ -67,7 +66,7 @@ sudo usermod -aG docker ec2-user
 sudo systemctl restart docker
 sudo chmod 666 /var/run/docker.sock
 ```
-<br>
+
 
 ### AWS CLI configuration
 ```
@@ -76,7 +75,7 @@ aws configure
 # Enter your AWS
 Access Key ID, Secret Access Key, region, and output format when prompted
 ```
-<br>
+
 
 ### Kubectl and EKSCTL installation
 ```
@@ -89,24 +88,26 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv /tmp/eksctl/usr/local/bin
 ```
-<br>
+
 
 ### Create EKS Cluster 
 Create an EKS cluster using eksctl: 
 ```
 eksctl create cluster --name mcappcluster --nodegroup-name mcng --node-type t3.micro --nodes 8 --managed 
 ```
-<br> 
+
 
 ### Install Required Jenkins Plugins 
 Install the Docker plugin in Jenkins: <br>
 1. Go to Jenkins Dashboard > Manage Jenkins > Manage Plugins > Available. <br>
-2. Install the Docker plugin,Pipeline stage view,blue ocean..etc <br><br>
+2. Install the Docker plugin,Pipeline stage view,blue ocean..etc <br>
 
 ### Install and configure Sonarqube as a Docker container 
 1. Docker run --itd  --name sonar -p 9000:9000 sonarqube <br>
 2. Check if the SonarQube container is running: <br>
-docker ps  <br>
+```
+docker ps
+```
 3. Access the SonarQube web interface: <br>
    a. Open a web browser and go to http://<your-server-ip>:9000 <br>
    b. The default login credentials are: <br>
@@ -215,7 +216,7 @@ pipeline {
 }
 
 ```
-<br> 
+
 
 #### Explanation of Each Stage 
 1. Checkout 
