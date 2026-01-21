@@ -98,24 +98,26 @@ eksctl create cluster --name mcappcluster --nodegroup-name mcng --node-type t3.m
 
 
 ### Install Required Jenkins Plugins 
-Install the Docker plugin in Jenkins: <br>
+#### Install the Docker plugin in Jenkins: 
 1. Go to Jenkins Dashboard > Manage Jenkins > Manage Plugins > Available. <br>
 2. Install the Docker plugin,Pipeline stage view,blue ocean..etc <br>
 
 ### Install and configure Sonarqube as a Docker container 
-1. Docker run --itd  --name sonar -p 9000:9000 sonarqube <br>
-2. Check if the SonarQube container is running: <br>
+```
+Docker run --itd  --name sonar -p 9000:9000 sonarqube
+```
+1. Check if the SonarQube container is running: <br>
 ```
 docker ps
 ```
-3. Access the SonarQube web interface: <br>
+2. Access the SonarQube web interface: <br>
    a. Open a web browser and go to http://<your-server-ip>:9000 <br>
    b. The default login credentials are: <br>
-1. Username: admin <br>
-2. Password: admin <br>
-4. Log in to SonarQube using the default credentials. <br>
+3. Username: admin <br>
+4. Password: admin <br>
+5. Log in to SonarQube using the default credentials. <br>
    a. Change the default password <br>
-5. Create Sonar token for Jenkins: <br>
+6. Create Sonar token for Jenkins: <br>
 Sonar Dashboard -> Administration -> MyAccount -> Security -> Create token  <br>
 
 ### Generate GitHub Token 
@@ -221,21 +223,21 @@ pipeline {
 #### Explanation of Each Stage 
 1. Checkout 
    a. Clones the main branch of the specified GitHub repository to the Jenkins workspace. 
-2. SonarQube Scan 
-   a. Lists the directory contents to ensure files are in place. 
-   b. Runs a SonarQube scan using Maven to analyze the code for bugs, vulnerabilities, and code smells. The scan results are sent to the specified  SonarQube server. 
+2. SonarQube Scan <br>
+   a. Lists the directory contents to ensure files are in place. <br>
+   b. Runs a SonarQube scan using Maven to analyze the code for bugs, vulnerabilities, and code smells. The scan results are sent to the specified  SonarQube server. <br>
 3. Build Artifact 
-   a. Cleans the workspace and packages the Maven project, creating a build artifact (typically a JAR or WAR file). 
+   a. Cleans the workspace and packages the Maven project, creating a build artifact (typically a JAR or WAR file). <br>
 4. Build Docker Image 
-   a. Builds a Docker image from the Dockerfile in the project directory. 
-   b. Tags the Docker image with the Jenkins build number for versioning. 
-   c. Trivy is an image scan on the specified image and fail the build if critical issues are found in image. 
+   a. Builds a Docker image from the Dockerfile in the project directory. <br>
+   b. Tags the Docker image with the Jenkins build number for versioning. <br>
+   c. Trivy is an image scan on the specified image and fail the build if critical issues are found in image. <br>
 5. Push to Docker Hub 
-   a. Logs into Docker Hub using credentials stored in Jenkins.
-   b. Pushes the Docker image to the Docker Hub repository. 
+   a. Logs into Docker Hub using credentials stored in Jenkins.<br>
+   b. Pushes the Docker image to the Docker Hub repository. <br>
 6. Update Deployment File 
-   a. Configures git user details for committing changes. 
-   b. Updates the deployment YAML file to use the newly created Docker image with the current build number. 
+   a. Configures git user details for committing changes. <br>
+   b. Updates the deployment YAML file to use the newly created Docker image with the current build number. <br>
    c. Stages, commits, and pushes the updated deployment file back to the GitHub repository, ensuring the Kubernetes cluster can pull the latest image. <br>
 
 ### Kubernetes Deployment and Service Files 
@@ -248,11 +250,10 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argocd/sta
 ```
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}' 
 kubectl get svc argocd-server -n argocd 
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | 
-base64 -d ; echo 
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo 
 ```
 
-Create deployment.yaml and service.yaml in your repository to define the Kubernetes resources: 
+#### Create deployment.yaml and service.yaml in your repository to define the Kubernetes resources: 
 
 ### deployment.yml:
 ```
@@ -305,18 +306,18 @@ You can define an Argo CD application declaratively with a YAML manifest or thro
 2. Click on + NEW APP.<br>
 3. Fill in the application details:<br>
    a. Application Name: my-app<br>
-   b. Project: default
+   b. Project: default<br>
    c. Sync Policy: Automatic<br>
    d. Check Prune Resources and Self Heal for a fully automated GitOps experience.<br>
-4. Configure the Source:
+4. Configure the Source:<br>
    a. Repository URL: The URL of your Config Repo (e.g.,https://github.com/your-github-username/my-app-config.git).<br>
-   b. Revision: HEAD (or your main branch name).
+   b. Revision: HEAD (or your main branch name).<br>
    c. Path: The path to the manifests for this specific application (e.g., my-app).<br>
-5. Configure the Destination:
+5. Configure the Destination:<br>
    a. Cluster URL: https://kubernetes.default.svc (for in-cluster deployment).<br>
-   b. Namespace: The Kubernetes namespace where you want to deploy the app (e.g.,production). Ensure this namespace exists.
+   b. Namespace: The Kubernetes namespace where you want to deploy the app (e.g.,production). Ensure this namespace exists.<br>
 6. Click the CREATE button.<br>
 
 
 ## Project Conclusion
-By following these phases, an organization can establish a highly automated, secure, and efficient workflow for developing and deploying containerized applications on Kubernetes.<br>
+By following these phases, an organization can establish a highly automated, secure, and efficient workflow for developing and deploying containerized applications on Kubernetes.
