@@ -228,14 +228,14 @@ pipeline {
    b. Runs a SonarQube scan using Maven to analyze the code for bugs, vulnerabilities, and code smells. The scan results are sent to the specified  SonarQube server. <br>
 3. Build Artifact 
    a. Cleans the workspace and packages the Maven project, creating a build artifact (typically a JAR or WAR file). <br>
-4. Build Docker Image 
+4. Build Docker Image <br>
    a. Builds a Docker image from the Dockerfile in the project directory. <br>
    b. Tags the Docker image with the Jenkins build number for versioning. <br>
    c. Trivy is an image scan on the specified image and fail the build if critical issues are found in image. <br>
-5. Push to Docker Hub 
+5. Push to Docker Hub <br>
    a. Logs into Docker Hub using credentials stored in Jenkins.<br>
    b. Pushes the Docker image to the Docker Hub repository. <br>
-6. Update Deployment File 
+6. Update Deployment File <br>
    a. Configures git user details for committing changes. <br>
    b. Updates the deployment YAML file to use the newly created Docker image with the current build number. <br>
    c. Stages, commits, and pushes the updated deployment file back to the GitHub repository, ensuring the Kubernetes cluster can pull the latest image. <br>
