@@ -93,7 +93,7 @@ sudo mv /tmp/eksctl/usr/local/bin
 ### Create EKS Cluster 
 Create an EKS cluster using eksctl: 
 ```
-eksctl create cluster --name mcappcluster --nodegroup-name mcng --node-type t3.micro --nodes 8 --managed 
+eksctl create cluster --name myappcluster --nodegroup-name myappng --node-type t3.micro --nodes 8 --managed 
 ```
 
 
