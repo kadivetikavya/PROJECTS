@@ -37,10 +37,10 @@ c. Manage deployment changes by updating configuration files and pushing them to
 2. Docker Hub Account: To store and distribute the container images. A free account provides public repositories.<br>
 3. Cloud Provider / Kubernetes Environment: Access to a Kubernetes cluster. Options include:<br>
   a. Local Development: gitbash or visual studio for local testing.<br>
-  b. Cloud-Managed: Amazon Elastic Kubernetes Service (EKS) for more robust, production-like environments.<br>
+  b. Cloud-Managed: Amazon Elastic Kubernetes Service (EKS) for more robust, production-like environments.<br><br>
 
 ## Infrastructure and Tool Installation
-A Linux server for Jenkins , Docker, Sonarqube setup with an instance type "t2.Xlarge" <br> and a EKS Cluster to deploy container application.<br>
+A Linux server for Jenkins , Docker, Sonarqube setup with an instance type "t2.Xlarge" and a EKS Cluster to deploy container application.<br>
 
 ### Jenkins Server Setup
 ```
@@ -101,7 +101,7 @@ eksctl create cluster --name mcappcluster --nodegroup-name mcng --node-type t3.m
 ### Install Required Jenkins Plugins 
 Install the Docker plugin in Jenkins: <br>
 1. Go to Jenkins Dashboard > Manage Jenkins > Manage Plugins > Available. <br>
-2. Install the Docker plugin,Pipeline stage view,blue ocean..etc <br>
+2. Install the Docker plugin,Pipeline stage view,blue ocean..etc <br><br>
 
 ### Install and configure Sonarqube as a Docker container 
 1. Docker run --itd  --name sonar -p 9000:9000 sonarqube <br>
@@ -115,12 +115,12 @@ docker ps  <br>
 4. Log in to SonarQube using the default credentials. <br>
    a. Change the default password <br>
 5. Create Sonar token for Jenkins: <br>
-Sonar Dashboard -> Administration -> MyAccount -> Security -> Create token 
+Sonar Dashboard -> Administration -> MyAccount -> Security -> Create token  <br>
 
 ### Generate GitHub Token 
 Generate a GitHub token for Jenkins to access your GIT repositories: <br>
 1. Go to GitHub > Settings > Developer settings > Personal access tokens.  <br>
-2. Generate a new token with the necessary scopes (e.g., repo, admin:repo_hook).<br>
+2. Generate a new token with the necessary scopes (e.g., repo, admin:repo_hook).<br><br>
    
 ### Create Jenkinsfile for CI/CD Pipeline 
 Create a Jenkinsfile in your repository to define the CI/CD pipeline: <br>
@@ -215,6 +215,7 @@ pipeline {
 }
 
 ```
+<br> 
 
 #### Explanation of Each Stage 
 1. Checkout 
