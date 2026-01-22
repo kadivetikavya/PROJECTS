@@ -1,4 +1,5 @@
 # Automated Secure Software Delivery Using GitOps on AWS EKS
+### Built using Git, Jenkins, Maven, SonarQube, Docker, Trivy, ArgoCD & Kubernetes(EKS)
 
 ## Project Overview
 Designed and implemented an enterprise-grade end-to-end DevSecOps CI/CD pipeline with GitOps-driven Kubernetes deployments, integrating automated security scans and continuous delivery.<br>
