@@ -46,7 +46,8 @@ A Linux server for Jenkins , Docker, Sonarqube setup with an instance type "t2.X
 ```
 #Install jenkins on your linux system
 sudo yum update –y
-sudo wget -O /etc/yum.repos.d/jenkins.repo \https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 sudo yum upgrade
 sudo yum install java-17-amazon-corretto -y
