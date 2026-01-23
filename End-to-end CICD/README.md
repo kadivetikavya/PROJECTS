@@ -245,12 +245,18 @@ pipeline {
 2. SonarQube Scan <br>
    a. Lists the directory contents to ensure files are in place. <br>
    b. Runs a SonarQube scan using Maven to analyze the code for bugs, vulnerabilities, and code smells. The scan results are sent to the specified  SonarQube server. <br>
+
+<img width="2111" height="859" alt="image" src="https://github.com/user-attachments/assets/67b413ac-1808-4fb3-a755-33e3b0b6538c" />
+
 3. Build Artifact 
    a. Cleans the workspace and packages the Maven project, creating a build artifact (typically a JAR or WAR file). <br>
 4. Build Docker Image <br>
    a. Builds a Docker image from the Dockerfile in the project directory. <br>
    b. Tags the Docker image with the Jenkins build number for versioning. <br>
    c. Trivy is an image scan on the specified image and fail the build if critical issues are found in image. <br>
+
+<img width="1526" height="531" alt="image" src="https://github.com/user-attachments/assets/fbab2532-72bb-4d72-9d70-14a6c3094a88" />
+
 5. Push to Docker Hub <br>
    a. Logs into Docker Hub using credentials stored in Jenkins.<br>
    b. Pushes the Docker image to the Docker Hub repository. <br>
@@ -258,7 +264,6 @@ pipeline {
    a. Configures git user details for committing changes. <br>
    b. Updates the deployment YAML file to use the newly created Docker image with the current build number. <br>
    c. Stages, commits, and pushes the updated deployment file back to the GitHub repository, ensuring the Kubernetes cluster can pull the latest image. <br>
-
 
 <img width="1059" height="309" alt="image" src="https://github.com/user-attachments/assets/62cd55bc-8806-4efc-abcf-e62d14cdb33b" />
 
@@ -341,7 +346,9 @@ You can define an Argo CD application declaratively with a YAML manifest or thro
    b. Namespace: The Kubernetes namespace where you want to deploy the app (e.g.,production). Ensure this namespace exists.<br>
 6. Click the CREATE button.<br>
 
-<img width="701" height="369" alt="image" src="https://github.com/user-attachments/assets/87639091-39e9-4a37-a7d0-498217508b68" />
+<img width="701" height="369" alt="image" src="https://github.com/user-attachments/assets/87639091-39e9-4a37-a7d0-498217508b68" />  <br>
+
+<img width="2152" height="754" alt="image" src="https://github.com/user-attachments/assets/0d3420ac-5a8f-4325-aeab-7188aeca1259" />
 
 ## Project Conclusion
 By following these phases, an organization can establish a highly automated, secure, and efficient workflow for developing and deploying containerized applications on Kubernetes.
