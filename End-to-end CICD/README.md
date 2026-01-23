@@ -253,7 +253,8 @@ pipeline {
    b. Tags the Docker image with the Jenkins build number for versioning. <br>
    c. Trivy is an image scan on the specified image and fail the build if critical issues are found in image. <br>
 
-<img width="1425" height="653" alt="image" src="https://github.com/user-attachments/assets/d9609716-9e95-490f-88ea-68b415e22e2e" /> <br>
+<img width="1346" height="500" alt="image" src="https://github.com/user-attachments/assets/8213aa30-1cc6-4c71-a588-31727cbc79b6" />  <br>
+ 
 
 5. Push to Docker Hub <br>
    a. Logs into Docker Hub using credentials stored in Jenkins.<br>
