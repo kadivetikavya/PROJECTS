@@ -237,8 +237,6 @@ pipeline {
 } 
 
 ```
-
-
 #### Explanation of Each Stage 
 1. Checkout 
    a. Clones the main branch of the specified GitHub repository to the Jenkins workspace. 
@@ -248,14 +246,14 @@ pipeline {
 
 <img width="2111" height="859" alt="image" src="https://github.com/user-attachments/assets/67b413ac-1808-4fb3-a755-33e3b0b6538c" />
 
-3. Build Artifact 
+3. Build Artifact <br>
    a. Cleans the workspace and packages the Maven project, creating a build artifact (typically a JAR or WAR file). <br>
 4. Build Docker Image <br>
    a. Builds a Docker image from the Dockerfile in the project directory. <br>
    b. Tags the Docker image with the Jenkins build number for versioning. <br>
    c. Trivy is an image scan on the specified image and fail the build if critical issues are found in image. <br>
 
-<img width="1526" height="531" alt="image" src="https://github.com/user-attachments/assets/fbab2532-72bb-4d72-9d70-14a6c3094a88" />
+<img width="1425" height="653" alt="image" src="https://github.com/user-attachments/assets/d9609716-9e95-490f-88ea-68b415e22e2e" /> <br>
 
 5. Push to Docker Hub <br>
    a. Logs into Docker Hub using credentials stored in Jenkins.<br>
