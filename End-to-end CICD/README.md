@@ -353,17 +353,14 @@ You can define an Argo CD application declaratively with a YAML manifest or thro
 kubectl get all -n argocd
 ```
 #### you will see: 
-<br>
-<img width="1503" height="645" alt="image" src="https://github.com/user-attachments/assets/bf1a803a-08b8-4178-974c-3302400e5382" />
-
-<br>
-
 ```
 service/my-app-service   LoadBalancer
 EXTERNAL-IP:
 a41393ce7746a47e08a6639bbb1f86da-977032493.us-east-1.elb.amazonaws.com
 PORT: 80
 ```
+<img width="1503" height="645" alt="image" src="https://github.com/user-attachments/assets/bf1a803a-08b8-4178-974c-3302400e5382" /> <br>
+
 
 ### 🔗 Final Application URL
 Open a web browser and go to http://a41393ce7746a47e08a6639bbb1f86da-977032493.us-east-1.elb.amazonaws.com:80 <br>
