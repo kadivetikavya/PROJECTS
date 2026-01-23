@@ -219,7 +219,7 @@ pipeline {
                     string(credentialsId: 'githubtoken', variable: 'githubtoken')
                 ]) {
                     sh '''
-                        git config user.email "kadivetikavya@gmail.com"
+                        git config user.email "ka@gmail.com"
                         git config user.name "kadivetikavya"
 
                         sed -i "s/kadi-repo:.*/kadi-repo:${BUILD_NUMBER}/g" deploymentfiles/deployment.yml
