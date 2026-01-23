@@ -357,6 +357,7 @@ kubectl get all -n argocd
 <img width="1503" height="645" alt="image" src="https://github.com/user-attachments/assets/bf1a803a-08b8-4178-974c-3302400e5382" />
 
 <br>
+
 ```
 service/my-app-service   LoadBalancer
 EXTERNAL-IP:
