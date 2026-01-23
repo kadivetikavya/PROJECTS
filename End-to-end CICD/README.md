@@ -82,12 +82,16 @@ Access Key ID, Secret Access Key, region, and output format when prompted
 ```
 #Install kubectl and eksctl to manage kubernetes cluster:
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-curl-LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
-echo "$(cat kubectl.sha256) kubectl" | sha256sum --check
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+
 # Install eksctl
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-sudo mv /tmp/eksctl/usr/local/bin
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+| tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
 ```
 
 
@@ -132,7 +136,7 @@ Create a Jenkinsfile in your repository to define the CI/CD pipeline: <br>
 pipeline {
     agent any
 
-    // Specify the Maven installation configured in Jenkins
+    
     tools {
         maven 'maven3'
     }
@@ -143,18 +147,18 @@ pipeline {
             steps {
                 echo 'Cloning GIT HUB Repo'
                 git branch: 'main',
-                    url: 'https://github.com/kadivetikavya/mindcircuit13'
+                    url: 'https://github.com/kadivetikavya/mindcircuit13.git'
             }
         }
 
         stage('SonarQube Scan') {
             steps {
                 echo 'Scanning project'
-                sh 'ls -ltr'
+                sh 'ls -lrth'
                 sh '''
                     mvn sonar:sonar \
-                    -Dsonar.host.url=http://100.26.227.191:9000 \
-                    -Dsonar.login=squ_19733ad4e43d54992ef61923b91447e2d1
+                    -Dsonar.host.url=http://34.207.182.118:9000/ \
+                    -Dsonar.login=squ_06428ecf7189debd6d825ba23b35aacf574e7d43
                 '''
             }
         }
@@ -172,6 +176,20 @@ pipeline {
                 sh 'docker build -t kadivetikavya/kadi-repo:${BUILD_NUMBER} .'
             }
         }
+		
+		
+		stage('trivy image scan vulnerabilities ') {
+            steps {
+                echo 'Scanning Docker image for vulnerabilities'
+                sh '''
+                trivy image \
+                  --severity HIGH,CRITICAL \
+                  --exit-code 1 \
+                  --no-progress \
+                  kadivetikavya/kadi-repo:${BUILD_NUMBER}
+                '''
+            }
+        }
 
         stage('Push to Docker Hub') {
             steps {
@@ -179,7 +197,7 @@ pipeline {
                     withCredentials([
                         string(credentialsId: 'dockerhub', variable: 'dockerhub')
                     ]) {
-                        sh 'docker login -u usernamehere -p ${dockerhub}'
+                        sh 'docker login -u kadivetikavya -p ${dockerhub}'
                     }
 
                     sh 'docker push kadivetikavya/kadi-repo:${BUILD_NUMBER}'
@@ -190,21 +208,21 @@ pipeline {
 
         stage('Update Deployment File') {
             environment {
-                GIT_REPO_NAME = 'kadivetikavya'
-                GIT_USER_NAME = 'kavyakadiveti'
+                GIT_REPO_NAME = 'mindcircuit13'
+                GIT_USER_NAME = 'kadivetikavya'
             }
 
             steps {
                 echo 'Update Deployment File'
 
                 withCredentials([
-                    string(credentialsId: 'githubtocken', variable: 'githubtoken')
+                    string(credentialsId: 'githubtoken', variable: 'githubtoken')
                 ]) {
                     sh '''
-                        git config user.email "kaxxxx123@gmail.com"
-                        git config user.name "kavya"
+                        git config user.email "kadivetikavya@gmail.com"
+                        git config user.name "kadivetikavya"
 
-                        sed -i "s/kadi-repo:.*/kadi-repo:${BUILD_NUMBER}/g" deploymentfiles/deployment.ym
+                        sed -i "s/kadi-repo:.*/kadi-repo:${BUILD_NUMBER}/g" deploymentfiles/deployment.yml
 
                         git add .
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
@@ -216,7 +234,7 @@ pipeline {
         }
 
     }
-}
+} 
 
 ```
 
@@ -241,11 +259,15 @@ pipeline {
    b. Updates the deployment YAML file to use the newly created Docker image with the current build number. <br>
    c. Stages, commits, and pushes the updated deployment file back to the GitHub repository, ensuring the Kubernetes cluster can pull the latest image. <br>
 
+
+<img width="1059" height="309" alt="image" src="https://github.com/user-attachments/assets/62cd55bc-8806-4efc-abcf-e62d14cdb33b" />
+
+
 ### Kubernetes Deployment and Service Files 
 1. Installation of argocd:
 ```
 kubectl create namespace argocd 
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argocd/stable/manifests/install.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 2. Edit the Argo CD server service to type LoadBalancer: 
 ```
@@ -319,6 +341,7 @@ You can define an Argo CD application declaratively with a YAML manifest or thro
    b. Namespace: The Kubernetes namespace where you want to deploy the app (e.g.,production). Ensure this namespace exists.<br>
 6. Click the CREATE button.<br>
 
+<img width="701" height="369" alt="image" src="https://github.com/user-attachments/assets/87639091-39e9-4a37-a7d0-498217508b68" />
 
 ## Project Conclusion
 By following these phases, an organization can establish a highly automated, secure, and efficient workflow for developing and deploying containerized applications on Kubernetes.
