@@ -348,5 +348,21 @@ You can define an Argo CD application declaratively with a YAML manifest or thro
 
 <img width="2152" height="754" alt="image" src="https://github.com/user-attachments/assets/0d3420ac-5a8f-4325-aeab-7188aeca1259" />
 
+### Your END-TO-END Application LoadBalancer Ready To View
+```
+kubectl get all -n argocd
+```
+<img width="1503" height="645" alt="image" src="https://github.com/user-attachments/assets/bf1a803a-08b8-4178-974c-3302400e5382" />
+#### you will see:
+```
+service/my-app-service   LoadBalancer
+EXTERNAL-IP:
+a41393ce7746a47e08a6639bbb1f86da-977032493.us-east-1.elb.amazonaws.com
+PORT: 80
+```
+### 🔗 Final Application URL
+Open a web browser and go to http://a41393ce7746a47e08a6639bbb1f86da-977032493.us-east-1.elb.amazonaws.com:80
+<img width="1669" height="294" alt="Screenshot 2026-01-23 165158" src="https://github.com/user-attachments/assets/745a6ed3-4ceb-4378-989e-107a9078c8ec" />
+
 ## Project Conclusion
 By following these phases, an organization can establish a highly automated, secure, and efficient workflow for developing and deploying containerized applications on Kubernetes.
