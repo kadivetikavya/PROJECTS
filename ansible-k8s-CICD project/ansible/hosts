@@ -1,0 +1,5 @@
+[appserver]
+3.83.113.114
+
+
+#ansible_ssh_private_key_file=/etc/ansible/id_rsa ansible_user=ec2-user
