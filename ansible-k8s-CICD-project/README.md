@@ -36,7 +36,7 @@ Docker image, and pushes it to DockerHub. <br>
 6. Ansible deploys the application to the Kubernetes cluster on EKS. <br>
 
 ### Installations and Setting up: 
-a. Github url:  https://github.com/kadivetikavya/PROJECTS/tree/main/ansible-k8sCICD-project<br>
+a. Github url:  https://github.com/kadivetikavya/PROJECTS/tree/main/ansible-k8s-CICD-project<br>
 b. Terraform installation on windows: <br>
 https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_windows_386.zip<br>
    1. Download the Terraform ZIP file from the link above. <br>
