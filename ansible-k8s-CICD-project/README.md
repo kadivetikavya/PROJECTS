@@ -3,7 +3,7 @@
 ### Project Overview
 The primary objective of this project is to establish a robust, end-to-end CI/CD pipeline that automates the process of building, testing, and deploying a Java application. By integrating a modern DevOps toolchain including Git, Jenkins, Maven, SonarQube, Docker, Trivy, Ansible, Terraform, and Amazon EKS, this project aims to achieve rapid, reliable, and secure software delivery.<br>
 
-### This project aims to achieve the following goals:
+#### This project aims to achieve the following goals:
 1. Infrastructure as Code (IaC): Use Terraform to provision and manage the entire AWS infrastructure, ensuring consistency, repeatability, and version control of the environment. This includes all networking components and server instances.<br>
 2. Version Control: Maintain both application source code and infrastructure code (Terraform) in Git repositories to enable collaboration, tracking, and auditability.<br>
 3. Continuous Integration (CI): Automate the build, test, and code analysis processes using a Jenkins pipeline triggered by code commits. This ensures early detection of integration issues and maintains high code quality.<br>
@@ -44,7 +44,7 @@ https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_windows_386.zip<b
    3.  Add the Terraform directory to the system's PATH environment variable <br>
 
 ### AWS CLI Configuration on Windows 
-Steps: 
+Steps: <br>
 a. Install AWS CLI if not already installed: <br>
    1. Download the installer from AWS CLI Installer.<br> 
    2. Run the installer and follow the on-screen instructions. <br?
@@ -76,13 +76,13 @@ provider "aws" {
   region  = "us-east-1"
 }
 
-#KEY PAIR 
+#step-1: Create KEY PAIR
 resource "aws_key_pair" "key_pair" {
   key_name   = "MyKey"
-  public_key = "Here paste our public key which is already we copy"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2dlxKnmfweH+cDrw9qCr/YFR+I/RS/Vkain0vLlm4OAyeZpmZS0xKkmTvDSHQXKqakY5USTP2EfT0rBjWkFJj4YjlxGhp3mpoDk9kq84Vt1M74CgECDJl2qfXqK7pJ5iPuaq0wA/nAHv79HwJrdmMBxIq7W/Fq7CJLbXAVJT6lTOGlutS71Ruko50qnGVQMhSvhLGFlQATi8mSWetIEjRELrj46HoNfCs+ubo5yD/ICsXMN1eaxtLKkK9wRGBgz1OM2KyLLwLEw7fd4L+D1OutA2/4+6ak9VJqOGc5rCn1wr8QlosIWIGoEifSlsvUHPmi9WjpUMdks0gmHzumicLFtV7y/dmV1IhJeyRC02jtypZUk6sbdXY2tvSfFehykCgrBu5ByR0s85AMJH5Gr8xczrfH6nU0xYDiUAXER8enb4XPOk5ea4kZcaFdykf/sPgfB8FT+aCE59Y6H0gWmG8ehw98Cj2RLvl2xG+SDcGbF0JrMF8f8JJ5zBVq8wN6ZE= Dell@MADHU-KIRAN"
 }
 
-#VPC 
+# Step-2: Create VPC
 resource "aws_vpc" "prod" {
   cidr_block           = "172.20.0.0/16"
   enable_dns_hostnames = true
@@ -90,7 +90,7 @@ resource "aws_vpc" "prod" {
   tags = { Name = "prod" }
 }
 
-#SUBNET
+# Step-3: Create public subnet
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.prod.id
   cidr_block              = "172.20.10.0/24"
@@ -100,14 +100,14 @@ resource "aws_subnet" "public_subnet" {
   tags = { Name = "public-subnet" }
 }
 
-#INTERNET GATEWAY 
+# Step-4: Create Internet Gateway
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.prod.id
 
   tags = { Name = "prod-igw" }
 }
 
-#ROUTE TABLE
+# Step-5: Create Route Table
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.prod.id
 
@@ -119,13 +119,13 @@ resource "aws_route_table" "public_rt" {
   tags = { Name = "public-route-table" }
 }
 
-#ROUTE TABLE ASSOCIATION
+# Step-6: Associate Route Table with Subnet
 resource "aws_route_table_association" "public_rt_assoc" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_rt.id
 }
 
-#SECURITY GROUP - JENKINS
+# Step-7: Create Security Group- JENKINS 
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
   vpc_id      = aws_vpc.prod.id
@@ -166,14 +166,14 @@ resource "aws_security_group" "jenkins_sg" {
   tags = { Name = "jenkins-sg" }
 }
 
-#SECURITY GROUP - MyApp 
-resource "aws_security_group" "myapp_sg" {
-  name        = "myapp-sg"
+# Step-8: Create Security Group - App 
+resource "aws_security_group" "app_sg" {
+  name        = "app-sg"
   vpc_id      = aws_vpc.prod.id
-  description = "MyApp SG"
+  description = "App SG"
 
   ingress {
-    description = "MyApp Port"
+    description = "App Port"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -204,10 +204,10 @@ resource "aws_security_group" "myapp_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "myapp-sg" }
+  tags = { Name = "app-sg" }
 }
 
-#JENKINS INSTANCE
+# Step-9: Launch JENKINS INSTANCE 
 resource "aws_instance" "jenkins" {
   ami                    = "ami-0fa3fe0fa7920f68e"
   instance_type          = "t2.large"
@@ -242,7 +242,7 @@ resource "aws_instance" "jenkins" {
   tags = { Name = "Jenkins-From-Terraform" }
 }
 
-#MyApp INSTANCE
+# Step-9: Launch MyApp INSTANCE 
 resource "aws_instance" "app" {
   ami                    = "ami-0fa3fe0fa7920f68e"
   instance_type          = "t2.micro"
