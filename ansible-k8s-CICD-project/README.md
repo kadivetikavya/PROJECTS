@@ -1,6 +1,6 @@
 # Production-Ready DevSecOps Pipeline with Infrastructure as Code, Secrity Scanning & Ansible-Based Deployment
 
-## Project Overview
+### Project Overview
 The primary objective of this project is to establish a robust, end-to-end CI/CD pipeline that automates the process of building, testing, and deploying a Java application. By integrating a modern DevOps toolchain including Git, Jenkins, Maven, SonarQube, Docker, Trivy, Ansible, Terraform, and Amazon EKS, this project aims to achieve rapid, reliable, and secure software delivery.<br>
 
 ### This project aims to achieve the following goals:
