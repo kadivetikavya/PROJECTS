@@ -5,5 +5,5 @@ output "public_ip_jenkins" {
 
 output "public_ip_app" {
   description = "Public IP of the MyApp EC2 instance"
-  value       = aws_instance.myapp.public_ip
+  value       = aws_instance.app.public_ip
 }
