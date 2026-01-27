@@ -26,6 +26,6 @@
       when: not kubeconfig_stat.stat.exists
 
     - name: Apply Kubernetes deployment
-      command: kubectl apply -f /home/ec2-user/k8s_deployment.yaml
+      command: kubectl apply -f /home/ec2-user/k8s-deployment.yml
       environment:
         KUBECONFIG: /home/ec2-user/.kube/config
