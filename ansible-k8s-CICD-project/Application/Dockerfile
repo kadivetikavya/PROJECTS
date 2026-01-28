@@ -1,14 +1,13 @@
-# Use Temurin JDK 17 Alpine variant (latest Alpine)
-FROM eclipse-temurin:17-jdk-alpine
+##artifact build stage
+FROM maven AS buildstage
+RUN mkdir /opt/myappdir
+WORKDIR /opt/myappdir
+COPY . .
+RUN mvn clean install    ## artifact -- .war
 
-# Set working directory
-WORKDIR /app
-
-# Copy the built JAR
-COPY target/myapp-1.0.jar app.jar
-
-# Expose application port
+### tomcat deploy stage
+FROM tomcat
+WORKDIR webapps
+COPY --from=buildstage /opt/myappdir/target/*.war .
+RUN rm -rf ROOT && mv *.war ROOT.war
 EXPOSE 8080
-
-# Run the JAR
-ENTRYPOINT ["java", "-jar", "app.jar"]
