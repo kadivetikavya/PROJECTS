@@ -477,6 +477,7 @@ Add Ansible Installation in Jenkins<br>
    Name: ansible<br>
    Path to ansible executables: /usr/bin/<br>
 6. Save the configuration<br>
+
 This allows Jenkins pipelines to use Ansible during deployment.<br>
 
 ### Create Jenkinsfile for CI/CD Pipeline
@@ -587,7 +588,6 @@ pipeline {
 }
 
 ```
-<br>
 
 ###  Continuous Deployment with Ansible
 #### Generate SSH Key on Jenkins (Utils) Server
@@ -656,11 +656,13 @@ Check all Kubernetes resources:
 kubectl get all
 ```
 Locate the LoadBalancer service and copy the external URL.<br>
+
+
 Example:
 ```
 a2a5e5f083b26430fadf920fe4f2a782-1459326598.us-east-1.elb.amazonaws.com
 ```
-Paste the LoadBalancer URL into your browser to access the application 🎉
+Paste the LoadBalancer URL into your browser to access the application.
 
 
 
