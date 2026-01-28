@@ -10,7 +10,7 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <!-- Upgrade Spring Boot to a supported version -->
+    <!-- Supported Spring Boot version -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -19,7 +19,7 @@
     </parent>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version> <!-- match Dockerfile Temurin 17 -->
     </properties>
 
     <dependencies>
@@ -55,7 +55,7 @@
     <build>
         <plugins>
 
-            <!-- Spring Boot plugin -->
+            <!-- Spring Boot Maven plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -68,7 +68,7 @@
                 <version>3.10.0.2594</version>
             </plugin>
 
-            <!-- OWASP Dependency Check plugin for security scan -->
+            <!-- OWASP Dependency Check plugin -->
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
