@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: kadivetikavya/k8s:5
+        image: kadivetikavya/k8s:6
         ports:
         - containerPort: 8080
 ---
