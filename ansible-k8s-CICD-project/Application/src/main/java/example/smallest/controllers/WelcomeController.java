@@ -11,7 +11,7 @@ public class WelcomeController {
 	@RequestMapping(method = RequestMethod.GET, produces = {"text/html"})
 	public @ResponseBody String helloWorld() {
 
-		return "<p style=\"font-size:24px; font-weight:bold;\">🎉 Congratulations DevOps Engineers!!! AWS DevOps is a recession-proof IT Career 💼🚀. All the best for your Bright future 🌟🎯</p>";
+		return "<p style=\"font-size:24px; font-weight:bold;\"> Enterprise CI/CD Pipeline with Security Controls Launched Successfully</p>";
 
 	}
 }
