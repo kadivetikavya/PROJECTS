@@ -1,40 +1,57 @@
+# Provider Configuration
+
 provider "aws" {
-  profile = "default"
-  region  = "us-east-1"
+  region = "us-east-1"
 }
 
-#step-1: Create KEY PAIR
+
+# Key Pair
+
 resource "aws_key_pair" "key_pair" {
   key_name   = "MyKey"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2dlxKnmfweH+cDrw9qCr/YFR+I/RS/Vkain0vLlm4OAyeZpmZS0xKkmTvDSHQXKqakY5USTP2EfT0rBjWkFJj4YjlxGhp3mpoDk9kq84Vt1M74CgECDJl2qfXqK7pJ5iPuaq0wA/nAHv79HwJrdmMBxIq7W/Fq7CJLbXAVJT6lTOGlutS71Ruko50qnGVQMhSvhLGFlQATi8mSWetIEjRELrj46HoNfCs+ubo5yD/ICsXMN1eaxtLKkK9wRGBgz1OM2KyLLwLEw7fd4L+D1OutA2/4+6ak9VJqOGc5rCn1wr8QlosIWIGoEifSlsvUHPmi9WjpUMdks0gmHzumicLFtV7y/dmV1IhJeyRC02jtypZUk6sbdXY2tvSfFehykCgrBu5ByR0s85AMJH5Gr8xczrfH6nU0xYDiUAXER8enb4XPOk5ea4kZcaFdykf/sPgfB8FT+aCE59Y6H0gWmG8ehw98Cj2RLvl2xG+SDcGbF0JrMF8f8JJ5zBVq8wN6ZE= Dell@MADHU-KIRAN"
+  public_key = file("~/.ssh/id_rsa.pub")
 }
 
-# Step-2: Create VPC
+
+# VPC
+
 resource "aws_vpc" "prod" {
   cidr_block           = "172.20.0.0/16"
   enable_dns_hostnames = true
 
-  tags = { Name = "prod" }
+  tags = {
+    Name = "prod-vpc"
+  }
 }
 
-# Step-3: Create public subnet
+
+# Public Subnet
+
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.prod.id
   cidr_block              = "172.20.10.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
 
-  tags = { Name = "public-subnet" }
+  tags = {
+    Name = "public-subnet"
+  }
 }
 
-# Step-4: Create Internet Gateway
+
+# Internet Gateway
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.prod.id
 
-  tags = { Name = "prod-igw" }
+  tags = {
+    Name = "prod-igw"
+  }
 }
 
-# Step-5: Create Route Table
+
+# Route Table
+
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.prod.id
 
@@ -43,23 +60,29 @@ resource "aws_route_table" "public_rt" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = { Name = "public-route-table" }
+  tags = {
+    Name = "public-route-table"
+  }
 }
 
-# Step-6: Associate Route Table with Subnet
+
+# Route Table Association
+
 resource "aws_route_table_association" "public_rt_assoc" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_rt.id
 }
 
-# Step-7: Create Security Group- JENKINS 
+
+# Security Group - Jenkins
+
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
+  description = "Security group for Jenkins Server"
   vpc_id      = aws_vpc.prod.id
-  description = "SG for Jenkins Server"
 
   ingress {
-    description = "Jenkins HTTP"
+    description = "Jenkins UI"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -67,10 +90,10 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   ingress {
-    description = "Ping"
-    from_port   = -1
-    to_port     = -1
-    protocol    = "icmp"
+    description = "SonarQube"
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -83,24 +106,27 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   egress {
-    description = "Allow all outbound"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "jenkins-sg" }
+  tags = {
+    Name = "jenkins-sg"
+  }
 }
 
-# Step-8: Create Security Group - MyApp 
-resource "aws_security_group" "myapp_sg" {
-  name        = "myapp-sg"
+
+# Security Group - App Server
+
+resource "aws_security_group" "app_sg" {
+  name        = "app-sg"
+  description = "Security group for App Server"
   vpc_id      = aws_vpc.prod.id
-  description = "MyApp SG"
 
   ingress {
-    description = "MyApp Port"
+    description = "Application Port"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -115,26 +141,21 @@ resource "aws_security_group" "myapp_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "All Inbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
-    description = "Allow all outbound"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "myapp-sg" }
+  tags = {
+    Name = "app-sg"
+  }
 }
 
-# Step-9: Launch JENKINS INSTANCE 
+
+# Jenkins EC2 Instance
+
 resource "aws_instance" "jenkins" {
   ami                    = "ami-0fa3fe0fa7920f68e"
   instance_type          = "t2.large"
@@ -152,30 +173,37 @@ resource "aws_instance" "jenkins" {
   provisioner "remote-exec" {
     inline = [
       "sudo yum update -y",
-      "sudo yum install wget git maven ansible docker -y",
+      "sudo yum install git maven ansible docker wget -y",
+      "sudo systemctl start docker",
+      "sudo systemctl enable docker",
+      "sudo usermod -aG docker ec2-user",
+
       "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo",
       "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key",
       "sudo yum install jenkins -y",
-      "sudo systemctl enable jenkins && sudo systemctl start jenkins",
-      "sudo systemctl enable docker && sudo systemctl start docker",
-      "sudo usermod -aG docker ec2-user",
-      "sudo usermod -aG docker jenkins",
-      "sudo chmod 666 /var/run/docker.sock",
-      "sudo docker run -d --name sonar -p 9000:9000 sonarqube",
-      "sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.rpm"
+      "sudo systemctl enable jenkins",
+      "sudo systemctl start jenkins",
+
+      "sudo docker run -d --name sonar -p 9000:9000 sonarqube"
     ]
   }
 
-  tags = { Name = "Jenkins-From-Terraform" }
+  tags = {
+    Name = "Jenkins-Server"
+  }
 }
 
-# Step-9: Launch MyApp INSTANCE 
-resource "aws_instance" "myapp" {
+
+# App EC2 Instance
+
+resource "aws_instance" "app" {
   ami                    = "ami-0fa3fe0fa7920f68e"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnet.id
   key_name               = aws_key_pair.key_pair.key_name
-  vpc_security_group_ids = [aws_security_group.myapp_sg.id]
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
 
-  tags = { Name = "MyApp-From-Terraform" }
+  tags = {
+    Name = "App-Server"
+  }
 }
