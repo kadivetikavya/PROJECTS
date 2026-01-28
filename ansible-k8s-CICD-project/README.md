@@ -344,8 +344,8 @@ Password: admin
 ```   
 d. First-Time SonarQube Login<br>
    1. Log in using the default credentials<br>
-   2. Change the default password when prompted<br>
-<br>e. Create Sonar Token for Jenkins<br>
+   2. Change the default password when prompted
+e. Create Sonar Token for Jenkins<br>
 1. Go to SonarQube Dashboard<br>
 2. Navigate to:<br>
    Administration → My Account → Security<br>
