@@ -444,7 +444,8 @@ Install the required plugins in Jenkins to support CI/CD automation. <br>
 Add credentials required for Docker, GitHub, and Ansible operations<br>
 1. Go to Jenkins Dashboard<br>
 2. Navigate to:<br>
-   Manage Jenkins → Credentials → System → Global credentials → Add Credentials
+   Manage Jenkins → Credentials → System → Global credentials → Add Credentials<br>
+   
 a. DockerHub Credentials<br>
    Kind: Secret Text<br>
    Secret: DockerHub password / token<br>
