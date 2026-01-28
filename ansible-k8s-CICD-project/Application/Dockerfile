@@ -1,13 +1,9 @@
-##artifact build stage
-FROM maven AS buildstage
-RUN mkdir /opt/myappdir
-WORKDIR /opt/myappdir
-COPY . .
-RUN mvn clean install    ## artifact -- .war
+FROM eclipse-temurin:17-jdk-alpine
 
-### tomcat deploy stage
-FROM tomcat
-WORKDIR webapps
-COPY --from=buildstage /opt/myappdir/target/*.war .
-RUN rm -rf ROOT && mv *.war ROOT.war
+WORKDIR /app
+
+COPY target/mcapp-1.0.jar app.jar
+
 EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
