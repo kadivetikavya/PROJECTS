@@ -10,20 +10,19 @@
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <!-- Supported Spring Boot version -->
+    <!-- Updated Spring Boot parent -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.13</version>
+        <version>3.2.3</version>
         <relativePath/>
     </parent>
 
     <properties>
-        <java.version>17</java.version> <!-- match Dockerfile Temurin 17 -->
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
-
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -36,25 +35,30 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Reactor Core -->
+        <!-- Reactor Core (updated) -->
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.6.12</version>
+            <version>3.6.16</version>
         </dependency>
 
-        <!-- Micrometer Prometheus -->
+        <!-- Micrometer Prometheus (updated) -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.2</version>
         </dependency>
 
+        <!-- Latest SnakeYAML for security -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>2.0</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-
             <!-- Spring Boot Maven plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -81,7 +85,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
