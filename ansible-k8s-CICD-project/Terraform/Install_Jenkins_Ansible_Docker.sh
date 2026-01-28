@@ -27,6 +27,8 @@ sudo service docker start
 # Adding Jenkins User to Docker
 sudo usermod -a -G docker jenkins
 
+
+
 # Autostarting Docker on restarts
 sudo chkconfig docker on
 sudo reboot
