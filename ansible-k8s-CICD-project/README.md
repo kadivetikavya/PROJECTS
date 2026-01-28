@@ -447,23 +447,23 @@ Add credentials required for Docker, GitHub, and Ansible operations<br>
    Manage Jenkins → Credentials → System → Global credentials → Add Credentials<br>
    
 a. DockerHub Credentials<br>
-   Kind: Secret Text<br>
-   Secret: DockerHub password / token<br>
-   ID: dockerhub<br>
-   Description: DockerHub credentials<br>
+   1. Kind: Secret Text<br>
+   2. Secret: DockerHub password / token<br>
+   3. ID: dockerhub<br>
+   4. Description: DockerHub credentials<br>
 
 b. GitHub Token<br>
-   Kind: Secret Text<br>
-   Secret: GitHub Personal Access Token<br>
-   ID: githubtoken<br>
-   Description: GitHub access token<br>
+   1. Kind: Secret Text<br>
+   2. Secret: GitHub Personal Access Token<br>
+   3. ID: githubtoken<br>
+   4. Description: GitHub access token<br>
 
 c. SSH Credentials (For Ansible)
-   Kind: SSH Username with private key<br>
-   ID: ssh<br>
-   Username: ec2-user<br>
-   Private Key: Paste the private key of utils (Jenkins) server<br>
-   Description: SSH access for Ansible<br>
+   1. Kind: SSH Username with private key<br>
+   2. ID: ssh<br>
+   3. Username: ec2-user<br>
+   4. Private Key: Paste the private key of utils (Jenkins) server<br>
+   5. Description: SSH access for Ansible<br>
 This credential allows Jenkins to connect to the app server without password.<br>
 
 ### Add SSH Credential ID for Ansible 
