@@ -1,10 +1,10 @@
-# Use Eclipse Temurin JDK 17 on Alpine 3.18
-FROM eclipse-temurin:17-jdk-alpine3.18
+# Use the latest supported Temurin JDK 17 Alpine variant
+FROM eclipse-temurin:17-jdk-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy only the built JAR from Maven target
+# Copy only the built JAR
 COPY target/myapp-1.0.jar app.jar
 
 # Expose application port
