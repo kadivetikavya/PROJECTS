@@ -300,8 +300,6 @@ resource "aws_instance" "app" {
 }
 
 ```
-<br>
-
 #### outputs.tf
 ```
 output "jenkins_public_ip" {
@@ -314,9 +312,6 @@ output "app_public_ip" {
   description = "Public IP of App Server"
 }
 ```
-
-<br>
-
 ### You Are Good To Go
 1. Initialize Terraform:
 ```
@@ -350,7 +345,7 @@ Password: admin
 d. First-Time SonarQube Login<br>
    1. Log in using the default credentials<br>
    2. Change the default password when prompted<br>
-e. Create Sonar Token for Jenkins<br>
+<br>e. Create Sonar Token for Jenkins<br>
 1. Go to SonarQube Dashboard<br>
 2. Navigate to:<br>
    Administration → My Account → Security<br>
@@ -448,7 +443,7 @@ Install the required plugins in Jenkins to support CI/CD automation. <br>
 Add credentials required for Docker, GitHub, and Ansible operations<br>
 1. Go to Jenkins Dashboard<br>
 2. Navigate to:<br>
-   Manage Jenkins → Credentials → System → Global credentials → Add Credentials<br>
+   Manage Jenkins → Credentials → System → Global credentials → Add Credentials
 a. DockerHub Credentials<br>
    Kind: Secret Text<br>
    Secret: DockerHub password / token<br>
