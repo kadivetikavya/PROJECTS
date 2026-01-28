@@ -1,9 +1,9 @@
-output "public_ip_jenkins" {
-  description = "Public IP of the Jenkins EC2 instance"
+output "jenkins_public_ip" {
   value       = aws_instance.jenkins.public_ip
+  description = "Public IP of Jenkins Server"
 }
 
-output "public_ip_app" {
-  description = "Public IP of the MyApp EC2 instance"
+output "app_public_ip" {
   value       = aws_instance.app.public_ip
+  description = "Public IP of App Server"
 }
