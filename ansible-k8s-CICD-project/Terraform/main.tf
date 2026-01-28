@@ -183,8 +183,8 @@ resource "aws_instance" "jenkins" {
       "sudo yum install jenkins -y",
       "sudo systemctl enable jenkins",
       "sudo systemctl start jenkins",
-
       "sudo docker run -d --name sonar -p 9000:9000 sonarqube"
+      "sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.rpm"
     ]
   }
 
