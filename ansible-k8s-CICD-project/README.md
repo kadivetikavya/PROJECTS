@@ -44,70 +44,105 @@ https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_windows_386.zip<b
    3.  Add the Terraform directory to the system's PATH environment variable <br>
 
 ### AWS CLI Configuration on Windows 
-Steps: <br>
-a. Install AWS CLI if not already installed: <br>
-   1. Download the installer from AWS CLI Installer.<br> 
-   2. Run the installer and follow the on-screen instructions. <br?
-b. Configure AWS CLI: 
+Install AWS CLI <br>
+1. Download from:<br>
+👉 https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+2. Run installer → Next → Finish<br>
+3. Verify: 
+```
+aws --version
+```
+Configure AWS CLI
 ```
 aws configure
 ```
-This will prompt for AWS Access Key ID, Secret Access Key, Default Region, and Default Output Format.<br?
+This will prompt for AWS Access Key ID, Secret Access Key, Default Region, and Default Output Format.<br>
 
-### Generate keypair in terminal
-1. Generate ssh-keygen in terminal(gitbash/vs code)
+### Generate SSH Key Pair (Windows)
+1. Generate ssh-keygen in gitbash / visual studio code
 ```
 ssh-keygen -t rsa
-cd ~     #it will take you to your PC home directory
-cd .ssh/
-ll
+cd ~/.ssh
+ls
 cat id_rsa.pub
 ```
-2. copy the public key value and paste in further steps
+2. Copy public key (id_rsa.pub)<br>
+3. Use it in Terraform key pair <br>
 
-### Infrastructure Provisioning with Terraform
-Here we are going create main.tf file to provision a VPC, subnets, security groups, EC2 instances(Jenkins and app
-server ),and other necessary AWS resources.
+### Infrastructure Provisioning using Terraform
+Using Terraform, we create:<br>
+1. VPC<br>
+2. Public Subnets<br>
+3. Internet Gateway & Route Tables<br>
+4. Security Groups<br>
+5. EC2 Instances<br>
+   a. Jenkins (Utils) Server<br>
+   b. Application Server<br>
+6. Key Pair (using public key)<br>
+All resources are provisioned in an automated and repeatable manner.<br>
 
-main.tf:
+#### Terraform Files Structure
+
+terraform/ <br>
+├── main.tf <br>
+└── outputs.tf<br>
+
+#### main.tf:
 ```
+# Provider Configuration
+
 provider "aws" {
-  profile = "default"
-  region  = "us-east-1"
+  region = "us-east-1"
 }
 
-#step-1: Create KEY PAIR
+
+# Key Pair
+
 resource "aws_key_pair" "key_pair" {
   key_name   = "MyKey"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2dlxKnmfweH+cDrw9qCr/YFR+I/RS/Vkain0vLlm4OAyeZpmZS0xKkmTvDSHQXKqakY5USTP2EfT0rBjWkFJj4YjlxGhp3mpoDk9kq84Vt1M74CgECDJl2qfXqK7pJ5iPuaq0wA/nAHv79HwJrdmMBxIq7W/Fq7CJLbXAVJT6lTOGlutS71Ruko50qnGVQMhSvhLGFlQATi8mSWetIEjRELrj46HoNfCs+ubo5yD/ICsXMN1eaxtLKkK9wRGBgz1OM2KyLLwLEw7fd4L+D1OutA2/4+6ak9VJqOGc5rCn1wr8QlosIWIGoEifSlsvUHPmi9WjpUMdks0gmHzumicLFtV7y/dmV1IhJeyRC02jtypZUk6sbdXY2tvSfFehykCgrBu5ByR0s85AMJH5Gr8xczrfH6nU0xYDiUAXER8enb4XPOk5ea4kZcaFdykf/sPgfB8FT+aCE59Y6H0gWmG8ehw98Cj2RLvl2xG+SDcGbF0JrMF8f8JJ5zBVq8wN6ZE= Dell@MADHU-KIRAN"
+  public_key = file("~/.ssh/id_rsa.pub")
 }
 
-# Step-2: Create VPC
+
+# VPC
+
 resource "aws_vpc" "prod" {
   cidr_block           = "172.20.0.0/16"
   enable_dns_hostnames = true
 
-  tags = { Name = "prod" }
+  tags = {
+    Name = "prod-vpc"
+  }
 }
 
-# Step-3: Create public subnet
+
+# Public Subnet
+
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.prod.id
   cidr_block              = "172.20.10.0/24"
   availability_zone       = "us-east-1a"
   map_public_ip_on_launch = true
 
-  tags = { Name = "public-subnet" }
+  tags = {
+    Name = "public-subnet"
+  }
 }
 
-# Step-4: Create Internet Gateway
+
+# Internet Gateway
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.prod.id
 
-  tags = { Name = "prod-igw" }
+  tags = {
+    Name = "prod-igw"
+  }
 }
 
-# Step-5: Create Route Table
+
+# Route Table
+
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.prod.id
 
@@ -116,23 +151,29 @@ resource "aws_route_table" "public_rt" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = { Name = "public-route-table" }
+  tags = {
+    Name = "public-route-table"
+  }
 }
 
-# Step-6: Associate Route Table with Subnet
+
+# Route Table Association
+
 resource "aws_route_table_association" "public_rt_assoc" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public_rt.id
 }
 
-# Step-7: Create Security Group- JENKINS 
+
+# Security Group - Jenkins
+
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
+  description = "Security group for Jenkins Server"
   vpc_id      = aws_vpc.prod.id
-  description = "SG for Jenkins Server"
 
   ingress {
-    description = "Jenkins HTTP"
+    description = "Jenkins UI"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -140,10 +181,10 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   ingress {
-    description = "Ping"
-    from_port   = -1
-    to_port     = -1
-    protocol    = "icmp"
+    description = "SonarQube"
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -156,24 +197,27 @@ resource "aws_security_group" "jenkins_sg" {
   }
 
   egress {
-    description = "Allow all outbound"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "jenkins-sg" }
+  tags = {
+    Name = "jenkins-sg"
+  }
 }
 
-# Step-8: Create Security Group - App 
+
+# Security Group - App Server
+
 resource "aws_security_group" "app_sg" {
   name        = "app-sg"
+  description = "Security group for App Server"
   vpc_id      = aws_vpc.prod.id
-  description = "App SG"
 
   ingress {
-    description = "App Port"
+    description = "Application Port"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -188,26 +232,21 @@ resource "aws_security_group" "app_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "All Inbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
-    description = "Allow all outbound"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "app-sg" }
+  tags = {
+    Name = "app-sg"
+  }
 }
 
-# Step-9: Launch JENKINS INSTANCE 
+
+# Jenkins EC2 Instance
+
 resource "aws_instance" "jenkins" {
   ami                    = "ami-0fa3fe0fa7920f68e"
   instance_type          = "t2.large"
@@ -225,50 +264,60 @@ resource "aws_instance" "jenkins" {
   provisioner "remote-exec" {
     inline = [
       "sudo yum update -y",
-      "sudo yum install wget git maven ansible docker -y",
+      "sudo yum install git maven ansible docker wget -y",
+      "sudo systemctl start docker",
+      "sudo systemctl enable docker",
+      "sudo usermod -aG docker ec2-user",
+
       "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo",
       "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key",
       "sudo yum install jenkins -y",
-      "sudo systemctl enable jenkins && sudo systemctl start jenkins",
-      "sudo systemctl enable docker && sudo systemctl start docker",
-      "sudo usermod -aG docker ec2-user",
-      "sudo usermod -aG docker jenkins",
-      "sudo chmod 666 /var/run/docker.sock",
-      "sudo docker run -d --name sonar -p 9000:9000 sonarqube",
-      "sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.rpm"
+      "sudo systemctl enable jenkins",
+      "sudo systemctl start jenkins",
+
+      "sudo docker run -d --name sonar -p 9000:9000 sonarqube"
     ]
   }
 
-  tags = { Name = "Jenkins-From-Terraform" }
+  tags = {
+    Name = "Jenkins-Server"
+  }
 }
 
-# Step-9: Launch MyApp INSTANCE 
+
+# App EC2 Instance
+
 resource "aws_instance" "app" {
   ami                    = "ami-0fa3fe0fa7920f68e"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnet.id
   key_name               = aws_key_pair.key_pair.key_name
-  vpc_security_group_ids = [aws_security_group.myapp_sg.id]
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
 
-  tags = { Name = "App-From-Terraform" }
+  tags = {
+    Name = "App-Server"
+  }
 }
-```
 
-outputs.tf
 ```
-output "public_ip_jenkins" {
-  description = "Public IP of the Jenkins EC2 instance"
+<br>
+
+#### outputs.tf
+```
+output "jenkins_public_ip" {
   value       = aws_instance.jenkins.public_ip
+  description = "Public IP of Jenkins Server"
 }
 
-output "public_ip_app" {
-  description = "Public IP of the MyApp EC2 instance"
+output "app_public_ip" {
   value       = aws_instance.app.public_ip
+  description = "Public IP of App Server"
 }
 ```
 
 <br>
 
+### You Are Good To Go
 1. Initialize Terraform:
 ```
 terraform init
@@ -281,46 +330,83 @@ terraform plan
 ```
 terraform apply 
 ```
-4. Access the Jenkins & SonarQube web interface:<br>
-a. Open a web browser and go to http://<your-jenkins-server-ip>:8080 for jenkins server<br>
-b. Open a web browser and go to http://<your-jenkins-server-ip>:9000 for SonarQube server<br>
-c. The default login credentials are: <br>
-   1. Username: admin <br>
-   2. Password: admin <br>
-d. Log in to SonarQube using the default credentials. <br>
-   1. Change the default password<br>
-e. Create Sonar token for Jenkins: <br>
-   1. Sonar Dashboard -> Administration -> MyAccount -> Security -> Create token  <br>
-5. Generate GitHub Token for Jenkins to access your GIT repositories: <br>
-   1. Go to GitHub > Settings > Developer settings > Personal access tokens.<br>
-   2. Generate a new token with the necessary scopes<br>
-      
-### Let's connect to jenkins servers
-we don't have any pem key right now so using our private key in terminal(gitbash) <br>
+
+### Access the Jenkins & SonarQube web interface
+a. Jenkins UI<br>
+Open your browser and navigate to:
 ```
-ssh -i ~/.ssh/id_rsa ec2-user@jenkins-server-ip
-sudo hostnamectl set-hostname utils-server     # to rename our server
+http://<your-jenkins-server-ip>:8080
+```
+b. SonarQube UI<br>
+Open your browser and navigate to:
+```
+http://<your-jenkins-server-ip>:9000
+```
+c. Default SonarQube Credentials
+```
+Username: admin
+Password: admin
+```   
+d. First-Time SonarQube Login<br>
+   1. Log in using the default credentials<br>
+   2. Change the default password when prompted<br>
+e. Create Sonar Token for Jenkins<br>
+1. Go to SonarQube Dashboard<br>
+2. Navigate to:<br>
+   Administration → My Account → Security<br>
+3. Click Generate Token<br>
+4. Copy and save the token (used in Jenkins pipeline)<br>
+
+### Generate GitHub Token for Jenkins
+1. Go to GitHub → Settings<br>
+2. Select Developer settings<br>
+3. Click Personal access tokens<br>
+4. Generate a new token with required scopes:<br>
+   a. repo<br>
+   b. workflow<br>
+5. Copy and save the token (used in Jenkins credentials)<br>
+
+### Connect to Jenkins Server (Without PEM Key)
+
+Since the key pair was created using your local SSH key, connect using your private key.
+```
+ssh -i ~/.ssh/id_rsa ec2-user@<jenkins-server-ip>
+```
+Rename Jenkins Server Hostname
+```
+sudo hostnamectl set-hostname utils-server
+```
+Switch to Root User
+```
 sudo su -
-cat var/jenkins_home/secrets/initialAdminPassword   # for jenkins server password
+```
+Get Jenkins Initial Admin Password
+```
+cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+Use this password to unlock Jenkins on first login.
+
+
+### Connect to App Server
+```
+ssh -i ~/.ssh/id_rsa ec2-user@<app-server-ip>
+# Rename App Server Hostname
+sudo hostnamectl set-hostname app-server
+# Switch to Root User
+sudo su -
 ```
 
-### connecting to app server
-```
-ssh-i ~/.ssh/id_rsa ec2-user@app-server-ip
-sudo hostnamectl set-hostname app-server
-sudo su -
-```
-### Configure AWS CLI in app server 
-Configure AWS CLI to interact with AWS services: 
+### Configure AWS CLI on App Server
+Configure AWS CLI to allow interaction with AWS services:
 ```
 aws configure
 ```
-a. This will prompt for AWS Access Key ID, Secret Access Key, Default Region, and Default Output 
-Format.
+This will prompt for AWS Access Key ID, Secret Access Key, Default Region, and Default Output 
+Format.<br>
 
-### Kubectl and EKSCTL installation in app server
+### Install kubectl and eksctl on App Server
 ```
-#Install kubectl and eksctl to manage kubernetes cluster:
+#Install kubectl
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
@@ -328,7 +414,7 @@ install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version --client
 
 # Install eksctl
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" \ 
 | tar xz -C /tmp
 sudo mv /tmp/eksctl /usr/local/bin
 eksctl version
@@ -339,27 +425,66 @@ Create an EKS cluster using eksctl:
 ```
 eksctl create cluster --name myappcluster --nodegroup-name myng --node-type t3.micro --nodes 5 --managed
 ```
+Verify cluster:
+```
+eksctl get cluster
+kubectl get nodes
+```
+### Install Required Jenkins Plugins
+Install the required plugins in Jenkins to support CI/CD automation. <br>
+1. Go to Jenkins Dashboard<br>
+2. Navigate to:<br>
+   a. Manage Jenkins → Manage Plugins → Available<br>
+3. Search and install the following plugins:<br>
+   a. Docker<br>
+   b. Pipeline<br>
+   c. Pipeline Stage View<br>
+   d. Blue Ocean<br>
+   e. Ansible<br>
+4. Restart Jenkins if prompted<br>
 
-### Install Required Jenkins Plugins 
-Install required plugins in Jenkins:  <br>
-1. Go to Jenkins Dashboard > Manage Jenkins > Manage Plugins > Available. <br>
-2. Install the Docker plugin, Pipeline stage view, blue ocean, ansible plugin..etc <br>
 
-### Add credentials 
-Add credentials in Jenkins: <br>
-1. Go to Jenkins Dashboard > Manage Jenkins > Credentials > System > Global credentials > Add credentials <br>
-2. kind > secret text > secret - password of dockerhub > ID - give any name(eg.,dockerhub) <br>
-3. kind > secret text > secret - github token > ID - give any name(eg.,githubtocken) <br>
-4. kind > ssh username with private key > ID - ssh  > user name - ec2-user > private key - paste private of utils server(ansible installed in utils server only) > create <br>
+### Add Credentials in Jenkins
+Add credentials required for Docker, GitHub, and Ansible operations<br>
+1. Go to Jenkins Dashboard<br>
+2. Navigate to:<br>
+   Manage Jenkins → Credentials → System → Global credentials → Add Credentials<br>
+a. DockerHub Credentials<br>
+   Kind: Secret Text<br>
+   Secret: DockerHub password / token<br>
+   ID: dockerhub<br>
+   Description: DockerHub credentials<br>
 
-### Add ssh credentialId for ansible 
-Add ansible installations<br>
-1. Go to Jenkins Dashboard > Manage Jenkins > Tools > Ansible installation <br>
-2. Name - ansible > path - /usr/bin/ <br>
+b. GitHub Token<br>
+   Kind: Secret Text<br>
+   Secret: GitHub Personal Access Token<br>
+   ID: githubtoken<br>
+   Description: GitHub access token<br>
 
+c. SSH Credentials (For Ansible)
+   Kind: SSH Username with private key<br>
+   ID: ssh<br>
+   Username: ec2-user<br>
+   Private Key: Paste the private key of utils (Jenkins) server<br>
+   Description: SSH access for Ansible<br>
+This credential allows Jenkins to connect to the app server without password.<br>
 
-### Create Jenkinsfile for CI/CD Pipeline 
-Create a Jenkinsfile in your repository to define the CI/CD pipeline: >
+### Add SSH Credential ID for Ansible 
+Add Ansible Installation in Jenkins<br>
+1. Go to Jenkins Dashboard<br>
+2. Navigate to:<br>
+   Manage Jenkins → Tools<br>
+3. Scroll to Ansible installations<br>
+4. Click Add Ansible<br>
+5. Configure:<br>
+   Name: ansible<br>
+   Path to ansible executables: /usr/bin/<br>
+6. Save the configuration<br>
+This allows Jenkins pipelines to use Ansible during deployment.<br>
+
+### Create Jenkinsfile for CI/CD Pipeline
+Create a file named Jenkinsfile in the root of your GitHub repository.
+#### Jenkinsfile (End-to-End CI/CD)
 ```
 pipeline {
     agent any
@@ -369,54 +494,62 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Checking out source code'
-                git branch: 'main', url: 'https://github.com/kadivetikavya/PROJECTS/tree/main/ansible-k8s-CICD-project'
+                git branch: 'main',
+                    url: 'https://github.com/kadivetikavya/PROJECTS.git'
             }
         }
 
         stage('Build Jar') {
             steps {
                 echo 'Running Maven build'
-                sh 'cd Application && mvn clean package'
+                sh '''
+                  cd Application
+                  mvn clean package
+                '''
             }
         }
 
         stage('Sonar Scan') {
             steps {
                 echo 'Running SonarQube scan'
-                sh '''
-                    cd Application
-                    mvn sonar:sonar \
-                      -Dsonar.host.url=http://SonarQubeSerever-publicIp:9000 \
-                      -Dsonar.login=squ_857bc378b399cc95305af238a1c3f0e10e243415     //generated sonar token
-                '''
+                withCredentials([string(credentialsId: 'sonartoken', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                      cd Application
+                      mvn sonar:sonar \
+                        -Dsonar.host.url=http://<sonarqube-server-ip>:9000 \
+                        -Dsonar.login=${SONAR_TOKEN}
+                    '''
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    echo 'Building Docker Image'
-                    sh 'cd Application && docker build -t kadivetikavya/k8s:${BUILD_NUMBER} .'
-                }
+                echo 'Building Docker Image'
+                sh '''
+                  cd Application
+                  docker build -t kadivetikavya/k8s:${BUILD_NUMBER} .
+                '''
             }
         }
 
         stage('Docker Image Scan') {
             steps {
-                sh 'trivy image kadivetikavya/k8s:${BUILD_NUMBER}'
+                sh '''
+                  trivy image kadivetikavya/k8s:${BUILD_NUMBER}
+                '''
             }
         }
 
         stage('Push Image to DockerHub') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                         sh 'docker login -u kadivetikavya -p ${dockerhub}' 
-                    } 
-                    // Push the Docker image to Docker Hub 
-                    sh 'docker push kadivetikavya/k8s:${BUILD_NUMBER}' 
-                    echo 'Pushed to Docker Hub' 
+                withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_PASS')]) {
+                    sh '''
+                      docker login -u kadivetikavya -p ${DOCKER_PASS}
+                      docker push kadivetikavya/k8s:${BUILD_NUMBER}
+                    '''
                 }
+                echo 'Pushed to Docker Hub'
             }
         }
 
@@ -426,16 +559,17 @@ pipeline {
                 GIT_USER_NAME = "kadivetikavya"
             }
             steps {
-                withCredentials([string(credentialsId: 'githubtocken', variable: 'githubtocken')]) {
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        git config user.email "ka@gmail.com"
-                        git config user.name "kadivetikavya"
+                      git config user.email "ka@gmail.com"
+                      git config user.name "kadivetikavya"
 
-                        sed -i "s|k8s:.*|k8s:${BUILD_NUMBER}|g" ansible-k8s-CICD-project/ansible/k8s-deployment.yaml
+                      sed -i "s|image:.*|image: kadivetikavya/k8s:${BUILD_NUMBER}|g" \
+                      ansible-k8s-CICD-project/ansible/k8s-deployment.yaml
 
-                        git add .
-                        git commit -m "Update deployment image tag to version ${BUILD_NUMBER}"
-                        git push https://${githubtocken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                      git add .
+                      git commit -m "Update deployment image tag to ${BUILD_NUMBER}"
+                      git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git main
                     '''
                 }
             }
@@ -443,70 +577,93 @@ pipeline {
 
         stage('K8s Deployment using Ansible') {
             steps {
-                script {
-                    ansiblePlaybook(
-                        credentialsId: 'ssh',
-                        disableHostKeyChecking: true,
-                        installation: 'ansible',
-                        inventory: '/etc/ansible/inventory',
-                        playbook: 'ansible/ansible_k8s_deploy_playbook.yaml'
-                    )
-                }
+                ansiblePlaybook(
+                    credentialsId: 'ssh',
+                    disableHostKeyChecking: true,
+                    installation: 'ansible',
+                    inventory: '/etc/ansible/hosts',
+                    playbook: 'ansible/ansible_k8s_deploy_playbook.yaml'
+                )
             }
         }
     }
 }
-```
 
+```
 <br>
 
-###  Continuous Deployment with Ansible 
-Generate ssh-keygen in Jenkins server  as a ec2-user
+###  Continuous Deployment with Ansible
+#### Generate SSH Key on Jenkins (Utils) Server
+Login as ec2-user on the Jenkins server and generate SSH keys.
 ```
 sudo su - ec2-user
 pwd
-# you should be in /home/ec2-user
-ssh keygen
+# You should be in /home/ec2-user
+
+ssh-keygen
 ls -la
-cd .ssh/
+cd ~/.ssh
 cat id_rsa.pub
-# copy this public key and paste in app server
+```
+#### Copy the public key (id_rsa.pub)
+
+#### Paste Public Key on App Server
+Login to the app server and configure passwordless SSH.
+```
 sudo su - ec2-user
 ls -la
-cd .ssh/
+cd ~/.ssh
 vim authorized_keys
-# open utils server
-ssh ec2-user@appserver-publicip
-# Ssh password less authentication established 
-exit
-cd /etc/ansible    #home directory for ansible inventory
-sudo vim hosts
-[appserver]
-appserver-publicip  
+```
+Paste the copied public key and save the file.<br>
 
+### Verify Passwordless SSH
+From the Jenkins (utils) server:
+```
+ssh ec2-user@appserver-publicip
+```
+Passwordless SSH authentication should work
+Exit the app server:
+```
+exit
+```
+### Configure Ansible Inventory
+Navigate to Ansible configuration directory:
+```
+cd /etc/ansible
+sudo vim hosts
+```
+Add the app server details:
+```
+[appserver]
+appserver-publicip
+```
+
+### Test Ansible Connectivity
+Verify Ansible can connect to the app server:
+```
 ansible -i hosts -m ping all
 ```
-1. Use Ansible to manage Kubernetes manifests stored in GitHub repositories.<br>
-   a. Github url: https://github.com/kadivetikavya/PROJECTS/tree/main/ansible-k8s-CICD-project<br>
-2. Deploy applications to the EKS cluster using Ansible playbook. <br>
+Expected result: SUCCESS✅
+
+### Kubernetes Deployment with Ansible
+
+1. Kubernetes manifests are stored in GitHub<br>
+🔗 Repo: https://github.com/kadivetikavya/PROJECTS/tree/main/ansible-k8s-CICD-project
+2. Ansible playbook pulls and applies manifests to deploy the application on the EKS cluster.<br>
+
 
 ### Accessing the Application
-The application is now accessible to users via the external URL provided by the LoadBalancer
-service. <br>
+Check all Kubernetes resources:
 ```
 kubectl get all
 ```
-Paste the following URL into your browser to see the running application: <br>
-Loadbalancer url : a2a5e5f083b26430fadf920fe4f2a782-1459326598.us-east-1.elb.amazonaws.com
-
-
-
-
-
-
-
-
-
+Locate the LoadBalancer service and copy the external URL.<br>
+Example:
+```
+a2a5e5f083b26430fadf920fe4f2a782-1459326598.us-east-1.elb.amazonaws.com
+```
+Paste the LoadBalancer URL into your browser to access the application 🎉
 
 
 
