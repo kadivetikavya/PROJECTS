@@ -464,6 +464,7 @@ c. SSH Credentials (For Ansible)
    3. Username: ec2-user<br>
    4. Private Key: Paste the private key of utils (Jenkins) server<br>
    5. Description: SSH access for Ansible<br>
+   
 This credential allows Jenkins to connect to the app server without password.<br>
 
 ### Add SSH Credential ID for Ansible 
