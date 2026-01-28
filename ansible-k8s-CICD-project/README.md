@@ -564,7 +564,7 @@ pipeline {
                       git config user.name "kadivetikavya"
 
                       sed -i "s|image:.*|image: kadivetikavya/k8s:${BUILD_NUMBER}|g" \
-                      ansible-k8s-CICD-project/ansible/k8s-deployment.yaml
+                      ansible-k8s-CICD-project/ansible/k8s_deployment.yaml
 
                       git add .
                       git commit -m "Update deployment image tag to ${BUILD_NUMBER}"
