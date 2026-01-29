@@ -1,13 +1,36 @@
 ---
 - name: Deploy application to Kubernetes
-  hosts: localhost
+  hosts: appserver
   gather_facts: false
+  become: true
+
   vars:
-    kubeconfig_path: "~/.kube/config"
+    kubeconfig_path: "/home/ec2-user/.kube/config"
     namespace: "default"
-    deployment_file: "ansible/k8s_deployment.yaml"
+    deployment_file: "/home/ec2-user/k8s_deployment.yaml"
 
   tasks:
+
+    - name: Ensure .kube directory exists
+      file:
+        path: /home/ec2-user/.kube
+        state: directory
+        owner: ec2-user
+        mode: '0700'
+
+    - name: Copy kubeconfig to app server
+      copy:
+        src: kubeconfig
+        dest: "{{ kubeconfig_path }}"
+        owner: ec2-user
+        mode: '0600'
+
+    - name: Copy Kubernetes deployment manifest
+      copy:
+        src: ansible/k8s_deployment.yaml
+        dest: "{{ deployment_file }}"
+        owner: ec2-user
+        mode: '0644'
 
     - name: Ensure Kubernetes namespace exists
       community.kubernetes.k8s:
@@ -21,15 +44,7 @@
       community.kubernetes.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
-        definition: "{{ lookup('file', deployment_file) | from_yaml }}"
-
-    - name: Verify Deployment rollout status
-      community.kubernetes.k8s_info:
-        kind: Deployment
-        namespace: "{{ namespace }}"
-        name: k8s
-        kubeconfig: "{{ kubeconfig_path }}"
-      register: deployment_info
+        src: "{{ deployment_file }}"
 
     - name: Wait for deployment to be ready
       community.kubernetes.k8s_wait:
@@ -40,6 +55,16 @@
         timeout: 300
         condition: available
 
+    - name: Get deployment info
+      community.kubernetes.k8s_info:
+        kind: Deployment
+        namespace: "{{ namespace }}"
+        name: k8s
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: deployment_info
+
     - name: Output deployed image version
       debug:
-        msg: "Deployment is using image: {{ deployment_info.resources[0].spec.template.spec.containers[0].image }}"
+        msg: >
+          Deployment is using image:
+          {{ deployment_info.resources[0].spec.template.spec.containers[0].image }}
