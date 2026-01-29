@@ -1,9 +1,13 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-COPY target/myapp-1.0.jar app.jar
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --chown=appuser:appgroup target/myapp-1.0.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+USER appuser
+
+ENTRYPOINT ["java","-XX:+UseContainerSupport","-XX:MaxRAMPercentage=75.0","-jar","app.jar"]
