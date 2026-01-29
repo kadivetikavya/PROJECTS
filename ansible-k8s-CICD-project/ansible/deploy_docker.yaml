@@ -1,33 +1,52 @@
---- 
+---
 - hosts: appserver
-  name: "Deploying Demo Application"
-  tasks: 
-  - name: install docker
+  name: Deploying Demo Application
+  become: true
+
+  vars:
+    container_name: demo-app
+
+  tasks:
+
+  - name: Install Docker
     yum:
-      name='docker'
-      state=latest
-    become: true
+      name: docker
+      state: latest
 
-  - name: service docker
+  - name: Start and enable Docker
     service:
-      name=docker
-      state=started
-      enabled=yes
-    become: true
+      name: docker
+      state: started
+      enabled: yes
 
-  - name: add ec2-user to docker group
-    ansible.builtin.user:
+  - name: Install pip
+    yum:
+      name: python3-pip
+      state: present
+
+  - name: Install Docker SDK for Python
+    pip:
+      name: docker
+
+  - name: Add ec2-user to docker group
+    user:
       name: ec2-user
-      group: docker
+      groups: docker
       append: yes
-    become: true
 
-  - name: reset ssh connection to allow user to affect ec2-user
-    ansible.builtin.meta:
-      reset_connection
-    become: true
+  - name: Reset SSH connection
+    meta: reset_connection
 
-  - name: install demo app
-    shell: |
-      docker run -itd --rm -p 8080:8080 {{ image_name }}:{{ image_tag }}
-      
+  - name: Remove old container if exists
+    docker_container:
+      name: "{{ container_name }}"
+      state: absent
+
+  - name: Run latest container
+    docker_container:
+      name: "{{ container_name }}"
+      image: "{{ image_name }}:{{ image_tag }}"
+      state: started
+      restart_policy: always
+      published_ports:
+        - "8080:8080"
