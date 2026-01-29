@@ -6,7 +6,7 @@
 
   vars:
     kubeconfig_path: "/home/ec2-user/.kube/config"
-    namespace: "default"
+    k8s_namespace: "default"
     deployment_file: "/home/ec2-user/k8s_deployment.yaml"
 
   tasks:
@@ -18,12 +18,15 @@
         owner: ec2-user
         mode: '0700'
 
-    - name: Copy kubeconfig to app server
-      copy:
-        src: kubeconfig
-        dest: "{{ kubeconfig_path }}"
-        owner: ec2-user
-        mode: '0600'
+    - name: Generate kubeconfig for EKS
+      command: >
+        aws eks update-kubeconfig
+        --region us-east-1
+        --name mycluster
+        --kubeconfig {{ kubeconfig_path }}
+      environment:
+        AWS_DEFAULT_REGION: us-east-1
+      become_user: ec2-user
 
     - name: Copy Kubernetes deployment manifest
       copy:
@@ -32,30 +35,25 @@
         owner: ec2-user
         mode: '0644'
 
-    - name: Ensure namespace exists
-      command: kubectl get namespace {{ namespace }} --kubeconfig {{ kubeconfig_path }}
-      register: ns_check
-      failed_when: false
-      changed_when: false
+    - name: Ensure Kubernetes namespace exists
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ k8s_namespace }}"
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
 
-    - name: Create namespace if missing
-      command: kubectl create namespace {{ namespace }} --kubeconfig {{ kubeconfig_path }}
-      when: ns_check.rc != 0
+    - name: Apply Kubernetes Deployment
+      community.kubernetes.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        src: "{{ deployment_file }}"
 
-    - name: Apply Kubernetes deployment
-      command: kubectl apply -f {{ deployment_file }} --namespace {{ namespace }} --kubeconfig {{ kubeconfig_path }}
-
-    - name: Wait for deployment rollout to complete
-      command: kubectl rollout status deployment/k8s --namespace {{ namespace }} --timeout=300s --kubeconfig {{ kubeconfig_path }}
-
-    - name: Get deployed image version
-      command: >
-        kubectl get deployment k8s
-        --namespace {{ namespace }}
-        --kubeconfig {{ kubeconfig_path }}
-        -o jsonpath='{.spec.template.spec.containers[0].image}'
-      register: image_version
-
-    - name: Output deployed image version
-      debug:
-        msg: "Deployment is using image: {{ image_version.stdout }}"
+    - name: Wait for deployment to be ready
+      community.kubernetes.k8s_wait:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Deployment
+        namespace: "{{ k8s_namespace }}"
+        name: k8s
+        timeout: 300
+        condition: available
