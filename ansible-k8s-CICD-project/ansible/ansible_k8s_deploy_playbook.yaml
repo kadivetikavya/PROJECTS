@@ -7,6 +7,7 @@
     kubeconfig_path: "/home/ec2-user/.kube/config"
     k8s_namespace: "ansiblek8s"
     deployment_file: "/home/ec2-user/k8s_deployment.yaml"
+    deployment_name: "my-app"
     eks_cluster_name: "mycluster"
     aws_region: "us-east-1"
   
@@ -82,7 +83,7 @@
         var: apply_output.stdout_lines
 
     - name: Wait for deployment rollout
-      command: kubectl rollout status deployment/k8s -n {{ k8s_namespace }} --timeout=5m
+      command: kubectl rollout status deployment/{{ deployment_name }} -n {{ k8s_namespace }} --timeout=5m
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
       become_user: ec2-user
@@ -113,3 +114,14 @@
     - name: Display service details
       debug:
         var: service_status.stdout_lines
+
+    - name: Get deployment details
+      command: kubectl get deployment {{ deployment_name }} -n {{ k8s_namespace }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ec2-user
+      register: deployment_details
+
+    - name: Display deployment details
+      debug:
+        var: deployment_details.stdout_lines
