@@ -1,95 +1,130 @@
 pipeline {
     agent any
 
+    environment {
+        APP_DIR     = 'ansible-k8s-CICD-project/Application'
+        ANSIBLE_DIR = 'ansible-k8s-CICD-project/ansible'
+        IMAGE_NAME  = 'kadivetikavya/k8s'
+    }
+
     stages {
 
         stage('Checkout Code') {
             steps {
-                echo 'Checking out source code'
-                git branch: 'main', url: 'https://github.com/kadivetikavya/PROJECTS/tree/main/ansible-k8s-CICD-project'
+                git branch: 'main',
+                    url: 'https://github.com/kadivetikavya/PROJECTS.git'
             }
         }
 
         stage('Build Jar') {
             steps {
-                echo 'Running Maven build'
-                sh 'cd Application && mvn clean package'
+                dir("${APP_DIR}") {
+                    sh 'mvn clean package'
+                }
             }
         }
 
-        stage('Sonar Scan') {
+        stage('SonarQube Scan') {
             steps {
-                echo 'Running SonarQube scan'
-                sh '''
-                    cd Application
-                    mvn sonar:sonar \
-                      -Dsonar.host.url=http://SonarQubeSerever-publicIp:9000 \
-                      -Dsonar.login=squ_857bc378b399cc95305af238a1c3f0e10e243415     //generated sonar token
-                '''
+                withCredentials([string(credentialsId: 'sonartoken', variable: 'sonartoken')]) {
+                    dir("${APP_DIR}") {
+                        sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.host.url=http://35.170.52.40:9000/ \
+                          -Dsonar.login=$sonartoken
+                        '''
+                    }
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    echo 'Building Docker Image'
-                    sh 'cd Application && docker build -t kadivetikavya/k8s:${BUILD_NUMBER} .'
+                dir("${APP_DIR}") {
+                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
                 }
             }
         }
 
         stage('Docker Image Scan') {
             steps {
-                sh 'trivy image kadivetikavya/k8s:${BUILD_NUMBER}'
+                sh '''
+                trivy image \
+                  --severity HIGH,CRITICAL \
+                  --exit-code 1 \
+                  --no-progress \
+                  --timeout 10m \
+                  ${IMAGE_NAME}:${BUILD_NUMBER}
+                '''
             }
         }
 
-        stage('Push Image to DockerHub') {
+        stage('Push to Docker Hub') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                         sh 'docker login -u kadivetikavya -p ${dockerhub}' 
-                    } 
-                    // Push the Docker image to Docker Hub 
-                    sh 'docker push kadivetikavya/k8s:${BUILD_NUMBER}' 
-                    echo 'Pushed to Docker Hub' 
-                }
-            }
-        }
-
-        stage('Update Kubernetes Deployment Manifest File') {
-            environment {
-                GIT_REPO_NAME = "PROJECTS"
-                GIT_USER_NAME = "kadivetikavya"
-            }
-            steps {
-                withCredentials([string(credentialsId: 'githubtocken', variable: 'githubtocken')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
                     sh '''
-                        git config user.email "ka@gmail.com"
-                        git config user.name "kadivetikavya"
-
-                        sed -i "s|k8s:.*|k8s:${BUILD_NUMBER}|g" ansible-k8s-CICD-project/ansible/k8s-deployment.yml
-
-                        git add .
-                        git commit -m "Update deployment image tag to version ${BUILD_NUMBER}"
-                        git push https://${githubtocken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push ${IMAGE_NAME}:${BUILD_NUMBER}
                     '''
                 }
             }
         }
 
+        stage('Update K8s Manifest') {
+            steps {
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
+                    dir('ansible-k8s-CICD-project') {
+                        sh '''
+                        git config user.email "ka@gmail.com"
+                        git config user.name "kavya"
+
+                        git remote set-url origin https://${githubtoken}@github.com/kadivetikavya/PROJECTS.git
+                        git pull origin main --rebase
+
+                        sed -i "s|k8s:.*|k8s:${BUILD_NUMBER}|g" ansible/k8s_deployment.yaml
+
+                        git add ansible/k8s_deployment.yaml
+                        git commit -m "Update image tag to ${BUILD_NUMBER}" || echo "No changes to commit"
+                        git push origin main
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Debug Ansible Paths') {
+            steps {
+                sh '''
+                pwd
+                ls -R ansible-k8s-CICD-project/ansible
+                '''
+            }
+        }
+
         stage('K8s Deployment using Ansible') {
             steps {
-                script {
+                withCredentials([
+                    aws(credentialsId: 'aws-credentials', 
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
                     ansiblePlaybook(
+                        playbook: 'ansible-k8s-CICD-project/ansible/ansible_k8s_deploy_playbook.yaml',
+                        inventory: 'ansible-k8s-CICD-project/ansible/inventory',
                         credentialsId: 'ssh',
-                        disableHostKeyChecking: true,
-                        installation: 'ansible',
-                        inventory: '/etc/ansible/inventory',
-                        playbook: 'ansible/ansible_k8s_deploy_playbook.yaml'
+                        extraVars: [
+                            aws_access_key: [value: env.AWS_ACCESS_KEY_ID, hidden: true],
+                            aws_secret_key: [value: env.AWS_SECRET_ACCESS_KEY, hidden: true]
+                        ],
+                        disableHostKeyChecking: true
                     )
                 }
             }
         }
     }
 }
+
