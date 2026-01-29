@@ -19,7 +19,6 @@
         group: ec2-user
         mode: '0700'
 
-    # 🔹 ADD THIS TASK - Configure AWS credentials
     - name: Configure AWS credentials
       shell: |
         aws configure set aws_access_key_id {{ aws_access_key }}
@@ -54,7 +53,7 @@
 
     - name: Copy Kubernetes deployment manifest
       copy:
-        src: ansible/k8s_deployment.yaml
+        src: k8s_deployment.yaml
         dest: "{{ deployment_file }}"
         owner: ec2-user
         mode: '0644'
@@ -86,17 +85,6 @@
     - name: Display rollout status
       debug:
         var: rollout_status.stdout_lines
-
-    - name: Get deployment status
-      command: kubectl get deployment k8s -n {{ k8s_namespace }}
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
-      become_user: ec2-user
-      register: deployment_status
-
-    - name: Display deployment status
-      debug:
-        var: deployment_status.stdout_lines
 
     - name: Get pods status
       command: kubectl get pods -n {{ k8s_namespace }}
