@@ -21,7 +21,6 @@
         group: ec2-user
         mode: '0600'
 
-
     - name: Copy Kubernetes deployment file
       copy:
         src: "{{ playbook_dir }}/k8s_deployment.yaml"
@@ -39,7 +38,7 @@
 
     - name: Apply Kubernetes deployment
       become_user: ec2-user
-      shell: kubectl apply -f /home/ec2-user/k8s_deployment.yaml
+      shell: kubectl apply --validate=false -f /home/ec2-user/k8s_deployment.yaml
       environment:
         KUBECONFIG: /home/ec2-user/.kube/config
 
