@@ -469,7 +469,7 @@ e. Add AWS Credentials in Jenkins<br>
    4. Secret Access Key: ********<br>
    5. Description: AWS access for CI/CD<br>
    
-<img width="899" height="674" alt="Screenshot 2026-01-29 1638042" src="https://github.com/user-attachments/assets/db93385f-c4ba-40c6-b046-e2790dca36e5" />
+<img width="439" height="674" alt="Screenshot 2026-01-29 1638042" src="https://github.com/user-attachments/assets/698c68e4-0994-49a8-99b8-b99b855ed9fb" />
 
 
 This credential allows Jenkins to connect to the app server without password.<br>
