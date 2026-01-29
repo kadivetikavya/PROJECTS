@@ -59,10 +59,16 @@
         mode: '0644'
 
     - name: Create namespace if it doesn't exist
-      command: kubectl create namespace {{ k8s_namespace }} --dry-run=client -o yaml | kubectl apply -f -
+      shell: kubectl create namespace {{ k8s_namespace }} --dry-run=client -o yaml | kubectl apply -f -
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
       become_user: ec2-user
+      register: namespace_result
+      failed_when: false
+
+    - name: Display namespace creation result
+      debug:
+        var: namespace_result.stdout_lines
 
     - name: Apply Kubernetes Deployment
       command: kubectl apply -f {{ deployment_file }} -n {{ k8s_namespace }}
@@ -96,3 +102,14 @@
     - name: Display pods status
       debug:
         var: pods_status.stdout_lines
+
+    - name: Get service details
+      command: kubectl get svc -n {{ k8s_namespace }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ec2-user
+      register: service_status
+
+    - name: Display service details
+      debug:
+        var: service_status.stdout_lines
