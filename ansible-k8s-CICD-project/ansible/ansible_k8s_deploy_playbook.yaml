@@ -1,5 +1,5 @@
 ---
-- name: Deploy application to Kubernetes
+- name: Deploy application to Kubernetes using kubectl
   hosts: appserver
   gather_facts: false
   become: true
@@ -32,39 +32,30 @@
         owner: ec2-user
         mode: '0644'
 
-    - name: Ensure Kubernetes namespace exists
-      community.kubernetes.k8s:
-        api_version: v1
-        kind: Namespace
-        name: "{{ namespace }}"
-        kubeconfig: "{{ kubeconfig_path }}"
-        state: present
+    - name: Ensure namespace exists
+      command: kubectl get namespace {{ namespace }} --kubeconfig {{ kubeconfig_path }}
+      register: ns_check
+      failed_when: false
+      changed_when: false
 
-    - name: Apply Kubernetes Deployment
-      community.kubernetes.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
-        state: present
-        src: "{{ deployment_file }}"
+    - name: Create namespace if missing
+      command: kubectl create namespace {{ namespace }} --kubeconfig {{ kubeconfig_path }}
+      when: ns_check.rc != 0
 
-    - name: Wait for deployment to be ready
-      community.kubernetes.k8s_wait:
-        kubeconfig: "{{ kubeconfig_path }}"
-        kind: Deployment
-        namespace: "{{ namespace }}"
-        name: k8s
-        timeout: 300
-        condition: available
+    - name: Apply Kubernetes deployment
+      command: kubectl apply -f {{ deployment_file }} --namespace {{ namespace }} --kubeconfig {{ kubeconfig_path }}
 
-    - name: Get deployment info
-      community.kubernetes.k8s_info:
-        kind: Deployment
-        namespace: "{{ namespace }}"
-        name: k8s
-        kubeconfig: "{{ kubeconfig_path }}"
-      register: deployment_info
+    - name: Wait for deployment rollout to complete
+      command: kubectl rollout status deployment/k8s --namespace {{ namespace }} --timeout=300s --kubeconfig {{ kubeconfig_path }}
+
+    - name: Get deployed image version
+      command: >
+        kubectl get deployment k8s
+        --namespace {{ namespace }}
+        --kubeconfig {{ kubeconfig_path }}
+        -o jsonpath='{.spec.template.spec.containers[0].image}'
+      register: image_version
 
     - name: Output deployed image version
       debug:
-        msg: >
-          Deployment is using image:
-          {{ deployment_info.resources[0].spec.template.spec.containers[0].image }}
+        msg: "Deployment is using image: {{ image_version.stdout }}"
