@@ -469,7 +469,8 @@ e. Add AWS Credentials in Jenkins<br>
    4. Secret Access Key: ********<br>
    5. Description: AWS access for CI/CD<br>
    
-<img width="899" height="1001" alt="Screenshot 2026-01-29 163804" src="https://github.com/user-attachments/assets/5308ab00-497d-4579-9c9e-1138a55a198c" />
+<img width="899" height="674" alt="Screenshot 2026-01-29 1638042" src="https://github.com/user-attachments/assets/db93385f-c4ba-40c6-b046-e2790dca36e5" />
+
 
 This credential allows Jenkins to connect to the app server without password.<br>
 
@@ -716,7 +717,7 @@ kubectl get svc -n ansiblek8s          #namespace
 Locate the LoadBalancer service and copy the external URL.<br>
 
 
-Example:
+##### Example:
 ```
 http://adf1f5bcd753f43f1842eafd0fba4069-1375844474.us-east-1.elb.amazonaws.com
 ```
