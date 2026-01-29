@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: kadivetikavya/k8s:20
+        image: kadivetikavya/k8s:21
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
