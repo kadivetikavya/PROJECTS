@@ -1,13 +1,13 @@
-FROM eclipse-temurin:17-jre-alpine
+##artifact build stage
+FROM maven AS buildstage
+RUN mkdir /opt/mindcircuit13
+WORKDIR /opt/mindcircuit13
+COPY . .
+RUN mvn clean install    ## artifact -- .war
 
-WORKDIR /app
-
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-COPY --chown=appuser:appgroup target/myapp-1.0.jar app.jar
-
+### tomcat deploy stage
+FROM tomcat
+WORKDIR webapps
+COPY --from=buildstage /opt/mindcircuit13/target/*.war .
+RUN rm -rf ROOT && mv *.war ROOT.war
 EXPOSE 8080
-
-USER appuser
-
-ENTRYPOINT ["java","-XX:+UseContainerSupport","-XX:MaxRAMPercentage=75.0","-jar","app.jar"]
