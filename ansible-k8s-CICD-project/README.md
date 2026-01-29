@@ -697,6 +697,17 @@ The classic Stage View provides a summary of recent builds and the average time 
 
 <img width="2130" height="790" alt="Screenshot 2026-01-28 164637" src="https://github.com/user-attachments/assets/aade3ece-0c2f-439f-88fb-8d892164e717" />
 
+### SonarQube Project Overview
+The SonarQube Project Overview provides a centralized view of code quality metrics, security vulnerabilities, reliability issues, and quality gate status for the analyzed application.
+
+<img width="2105" height="910" alt="Screenshot 2026-01-28 164856" src="https://github.com/user-attachments/assets/dfbea3d2-b485-482f-b85f-ab750497654c" />
+
+
+### Docker Image Vulnerability Scan
+This stage scans the Docker image using Trivy to detect HIGH and CRITICAL security vulnerabilities before pushing or deployment.
+
+<img width="1501" height="522" alt="Screenshot 2026-01-28 165030" src="https://github.com/user-attachments/assets/bbf06922-739f-4279-b352-bca235abcdc1" />
+
 
 ### Kubernetes Deployment with Ansible
 
