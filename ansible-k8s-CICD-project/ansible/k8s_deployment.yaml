@@ -15,23 +15,30 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: nginx:latest  # Change this to your actual image once it's working
+        image: kadivetikavya/k8s:27
         ports:
-        - containerPort: 80
+        - containerPort: 8080  # Changed from 80 to 8080
         readinessProbe:
           httpGet:
             path: /
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          failureThreshold: 5
+            port: 8080  # Changed from 80 to 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
         livenessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 8080  # Changed from 80 to 8080
           initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
 ---
 apiVersion: v1
 kind: Service
@@ -44,5 +51,5 @@ spec:
     app: my-app
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 80           # External port (what users access)
+      targetPort: 8080   # Internal port (your app's port)
