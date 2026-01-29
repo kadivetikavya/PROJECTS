@@ -17,18 +17,18 @@ spec:
       - name: my-app
         image: kadivetikavya/k8s:27
         ports:
-        - containerPort: 8080  # Changed from 80 to 8080
+        - containerPort: 8080
         readinessProbe:
           httpGet:
             path: /
-            port: 8080  # Changed from 80 to 8080
-          initialDelaySeconds: 5
+            port: 8080
+          initialDelaySeconds: 10
           periodSeconds: 5
           failureThreshold: 3
         livenessProbe:
           httpGet:
             path: /
-            port: 8080  # Changed from 80 to 8080
+            port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 3
@@ -51,5 +51,5 @@ spec:
     app: my-app
   ports:
     - protocol: TCP
-      port: 80           # External port (what users access)
-      targetPort: 8080   # Internal port (your app's port)
+      port: 80
+      targetPort: 8080
