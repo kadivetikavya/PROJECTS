@@ -1,6 +1,6 @@
 # Production-Ready DevSecOps Pipeline with Infrastructure as Code, Secrity Scanning & Ansible-Based Deployment
 
-### Project Overview
+## Project Overview
 The primary objective of this project is to establish a robust, end-to-end CI/CD pipeline that automates the process of building, testing, and deploying a Java application. By integrating a modern DevOps toolchain including Git, Jenkins, Maven, SonarQube, Docker, Trivy, Ansible, Terraform, and Amazon EKS, this project aims to achieve rapid, reliable, and secure software delivery.<br>
 
 
@@ -468,7 +468,9 @@ e. Add AWS Credentials in Jenkins<br>
    3. Access Key ID: AKIAxxxx<br>
    4. Secret Access Key: ********<br>
    5. Description: AWS access for CI/CD<br>
-  
+   
+<img width="899" height="1001" alt="Screenshot 2026-01-29 163804" src="https://github.com/user-attachments/assets/5308ab00-497d-4579-9c9e-1138a55a198c" />
+
 This credential allows Jenkins to connect to the app server without password.<br>
 
 <img width="1790" height="680" alt="Screenshot 2026-01-29 182952" src="https://github.com/user-attachments/assets/f815b7c7-64c3-4153-89d0-26a20f650b9d" />
@@ -574,8 +576,8 @@ pipeline {
                 withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
                     dir('ansible-k8s-CICD-project') {
                         sh '''
-                        git config user.email "kadivetikavya@gmail.com"
-                        git config user.name "kadivetikavya"
+                        git config user.email "ka@gmail.com"
+                        git config user.name "kavya"
 
                         git remote set-url origin https://${githubtoken}@github.com/kadivetikavya/PROJECTS.git
                         git pull origin main --rebase
@@ -683,13 +685,13 @@ Expected result: SUCCESS✅
 ### Pipeline Execution and Results
 Once the Jenkins pipeline is configured and triggered, it will execute each stage. The following images show a successful pipeline run.
 
-#### Jenkins Blue Ocean View
+### Jenkins Blue Ocean View
 The Blue Ocean interface provides a modern, visual representation of the pipeline flow, clearly showing the status of each stage.
 
 <img width="2136" height="691" alt="Screenshot 2026-01-28 164707" src="https://github.com/user-attachments/assets/57b5a735-4a55-4401-80c4-2ac343297170" />
 
 
-#### Jenkins Stage View
+### Jenkins Stage View
 The classic Stage View provides a summary of recent builds and the average time taken for each stage, which is useful for identifying bottlenecks.
 
 <img width="2130" height="790" alt="Screenshot 2026-01-28 164637" src="https://github.com/user-attachments/assets/aade3ece-0c2f-439f-88fb-8d892164e717" />
@@ -705,10 +707,11 @@ The classic Stage View provides a summary of recent builds and the average time 
 ### Accessing the Application
 Check all Kubernetes resources:
 ```
-kubectl get all -n ansiblek8s          #namespace
+kubectl get svc -n ansiblek8s          #namespace
 ```
+<br>
 
-<img width="1489" height="217" alt="Screenshot 2026-01-29 182301" src="https://github.com/user-attachments/assets/ed77d82f-24c6-4dfb-b29d-e14336b3b8ec" />
+<img width="1489" height="217" alt="Screenshot 2026-01-29 182301" src="https://github.com/user-attachments/assets/ed77d82f-24c6-4dfb-b29d-e14336b3b8ec" /> <br>
 
 Locate the LoadBalancer service and copy the external URL.<br>
 
