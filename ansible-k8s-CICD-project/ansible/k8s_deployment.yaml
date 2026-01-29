@@ -47,13 +47,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-app-service
+  name: app-service
 spec:
-  type: LoadBalancer
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8080
-    protocol: TCP
+  type: NodePort
   selector:
     app: my-app
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30007
