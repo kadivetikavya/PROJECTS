@@ -1,49 +1,45 @@
 ---
-- name: Deploy application into EKS cluster
-  hosts: appserver
-  become: yes
+- name: Deploy application to Kubernetes
+  hosts: localhost
+  gather_facts: false
+  vars:
+    kubeconfig_path: "~/.kube/config"
+    namespace: "default"
+    deployment_file: "ansible/k8s_deployment.yaml"
 
   tasks:
 
-    - name: Ensure .kube directory exists
-      file:
-        path: /home/ec2-user/.kube
-        state: directory
-        owner: ec2-user
-        group: ec2-user
-        mode: '0755'
+    - name: Ensure Kubernetes namespace exists
+      community.kubernetes.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ namespace }}"
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
 
-    - name: Copy kubeconfig to app server
-      copy:
-        src: /var/lib/jenkins/.kube/config
-        dest: /home/ec2-user/.kube/config
-        owner: ec2-user
-        group: ec2-user
-        mode: '0600'
+    - name: Apply Kubernetes Deployment
+      community.kubernetes.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('file', deployment_file) | from_yaml }}"
 
-    - name: Copy Kubernetes deployment file
-      copy:
-        src: "{{ playbook_dir }}/k8s_deployment.yaml"
-        dest: /home/ec2-user/k8s_deployment.yaml
-        owner: ec2-user
-        group: ec2-user
-        mode: '0644'
+    - name: Verify Deployment rollout status
+      community.kubernetes.k8s_info:
+        kind: Deployment
+        namespace: "{{ namespace }}"
+        name: k8s
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: deployment_info
 
-    - name: Install kubectl if not present
-      shell: |
-        if ! command -v kubectl &> /dev/null; then
-          curl -LO https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
-          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        fi
+    - name: Wait for deployment to be ready
+      community.kubernetes.k8s_wait:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Deployment
+        namespace: "{{ namespace }}"
+        name: k8s
+        timeout: 300
+        condition: available
 
-    - name: Apply Kubernetes deployment
-      become_user: ec2-user
-      shell: kubectl apply --validate=false -f /home/ec2-user/k8s_deployment.yaml
-      environment:
-        KUBECONFIG: /home/ec2-user/.kube/config
-
-    - name: Verify rollout status
-      become_user: ec2-user
-      shell: kubectl rollout status deployment/my-app
-      environment:
-        KUBECONFIG: /home/ec2-user/.kube/config
+    - name: Output deployed image version
+      debug:
+        msg: "Deployment is using image: {{ deployment_info.resources[0].spec.template.spec.containers[0].image }}"
