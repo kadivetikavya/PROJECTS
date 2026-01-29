@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: kadivetikavya/k8s:28
+        image: kadivetikavya/k8s:5
         ports:
         - containerPort: 8080
         readinessProbe:
