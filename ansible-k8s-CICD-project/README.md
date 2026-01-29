@@ -3,15 +3,6 @@
 ### Project Overview
 The primary objective of this project is to establish a robust, end-to-end CI/CD pipeline that automates the process of building, testing, and deploying a Java application. By integrating a modern DevOps toolchain including Git, Jenkins, Maven, SonarQube, Docker, Trivy, Ansible, Terraform, and Amazon EKS, this project aims to achieve rapid, reliable, and secure software delivery.<br>
 
-#### This project aims to achieve the following goals:
-1. Infrastructure as Code (IaC): Use Terraform to provision and manage the entire AWS infrastructure, ensuring consistency, repeatability, and version control of the environment. This includes all networking components and server instances.<br>
-2. Version Control: Maintain both application source code and infrastructure code (Terraform) in Git repositories to enable collaboration, tracking, and auditability.<br>
-3. Continuous Integration (CI): Automate the build, test, and code analysis processes using a Jenkins pipeline triggered by code commits. This ensures early detection of integration issues and maintains high code quality.<br>
-4. Static Code Analysis: Integrate SonarQube to perform continuous inspection of code quality, identifying bugs, vulnerabilities, and code smells before they reach production.<br>
-5. Containerization: Package the application and its dependencies into a standardized Docker container, creating a portable and consistent runtime environment.<br>
-6. Container Security: Implement vulnerability scanning for Docker images using Trivy to identify and mitigate security risks before deployment.<br>
-7. Continuous Deployment (CD): Automate the deployment of the containerized application to a Kubernetes cluster using Ansible, enabling a seamless and controlled rollout process.<br>
-
 
 ## Architecture and Pipeline Flow
 <img width="1821" height="700" alt="2 drawio (1)" src="https://github.com/user-attachments/assets/980684c6-bd08-4379-96ce-bc9314bf1979" />
@@ -268,14 +259,14 @@ resource "aws_instance" "jenkins" {
       "sudo systemctl start docker",
       "sudo systemctl enable docker",
       "sudo usermod -aG docker ec2-user",
-
+      "sudo usermod -aG docker jenkins",
       "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo",
       "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key",
       "sudo yum install jenkins -y",
       "sudo systemctl enable jenkins",
       "sudo systemctl start jenkins",
-
       "sudo docker run -d --name sonar -p 9000:9000 sonarqube"
+      "sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.rpm"
     ]
   }
 
@@ -436,8 +427,8 @@ Install the required plugins in Jenkins to support CI/CD automation. <br>
    c. Pipeline Stage View<br>
    d. Blue Ocean<br>
    e. Ansible<br>
+   f. AWS Credentials<br>
 4. Restart Jenkins if prompted<br>
-
 
 ### Add Credentials in Jenkins
 Add credentials required for Docker, GitHub, and Ansible operations<br>
@@ -446,10 +437,11 @@ Add credentials required for Docker, GitHub, and Ansible operations<br>
    Manage Jenkins → Credentials → System → Global credentials → Add Credentials<br>
    
 a. DockerHub Credentials<br>
-   1. Kind: Secret Text<br>
-   2. Secret: DockerHub password / token<br>
-   3. ID: dockerhub<br>
-   4. Description: DockerHub credentials<br>
+   1. Kind: usernamePassword Text<br>
+   2. Username: Your Docker Hub username<br>
+   3. Password: Docker Hub password or Access Token
+   4. ID: dockerhub<br>
+   5. Description: DockerHub credentials<br>
 
 b. GitHub Token<br>
    1. Kind: Secret Text<br>
@@ -457,14 +449,29 @@ b. GitHub Token<br>
    3. ID: githubtoken<br>
    4. Description: GitHub access token<br>
 
-c. SSH Credentials (For Ansible)
+c. SSH Credentials (For Ansible)<br>
    1. Kind: SSH Username with private key<br>
    2. ID: ssh<br>
    3. Username: ec2-user<br>
    4. Private Key: Paste the private key of utils (Jenkins) server<br>
    5. Description: SSH access for Ansible<br>
    
+d. Add SonarQube Token in Jenkins<br>
+   1. Kind: Secret Text<br>
+   2. Secret: Paste SonarQube token<br>
+   3. ID: sonartoken<br>
+   4. Description	SonarQube token for Jenkins<br>
+      
+e. Add AWS Credentials in Jenkins<br>
+   1. Kind: AWS Credentials<br>
+   2. ID: aws-credentials<br>
+   3. Access Key ID: AKIAxxxx<br>
+   4. Secret Access Key: ********<br>
+   5. Description: AWS access for CI/CD<br>
+  
 This credential allows Jenkins to connect to the app server without password.<br>
+
+<img width="1790" height="680" alt="Screenshot 2026-01-29 182952" src="https://github.com/user-attachments/assets/f815b7c7-64c3-4153-89d0-26a20f650b9d" />
 
 ### Add SSH Credential ID for Ansible 
 Add Ansible Installation in Jenkins<br>
@@ -479,6 +486,8 @@ Add Ansible Installation in Jenkins<br>
 6. Save the configuration<br>
 
 This allows Jenkins pipelines to use Ansible during deployment.<br>
+<img width="1804" height="828" alt="Screenshot 2026-01-29 183122" src="https://github.com/user-attachments/assets/d7e8cb98-a4f6-4f3c-9d95-40f79a0b3fce" />
+
 
 ### Create Jenkinsfile for CI/CD Pipeline
 Create a file named Jenkinsfile in the root of your GitHub repository.
@@ -487,11 +496,16 @@ Create a file named Jenkinsfile in the root of your GitHub repository.
 pipeline {
     agent any
 
+    environment {
+        APP_DIR     = 'ansible-k8s-CICD-project/Application'
+        ANSIBLE_DIR = 'ansible-k8s-CICD-project/ansible'
+        IMAGE_NAME  = 'kadivetikavya/k8s'
+    }
+
     stages {
 
         stage('Checkout Code') {
             steps {
-                echo 'Checking out source code'
                 git branch: 'main',
                     url: 'https://github.com/kadivetikavya/PROJECTS.git'
             }
@@ -499,93 +513,116 @@ pipeline {
 
         stage('Build Jar') {
             steps {
-                echo 'Running Maven build'
-                sh '''
-                  cd Application
-                  mvn clean package
-                '''
+                dir("${APP_DIR}") {
+                    sh 'mvn clean package'
+                }
             }
         }
 
-        stage('Sonar Scan') {
+        stage('SonarQube Scan') {
             steps {
-                echo 'Running SonarQube scan'
-                withCredentials([string(credentialsId: 'sonartoken', variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                      cd Application
-                      mvn sonar:sonar \
-                        -Dsonar.host.url=http://<sonarqube-server-ip>:9000 \
-                        -Dsonar.login=${SONAR_TOKEN}
-                    '''
+                withCredentials([string(credentialsId: 'sonartoken', variable: 'sonartoken')]) {
+                    dir("${APP_DIR}") {
+                        sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.host.url=http://35.170.52.40:9000/ \
+                          -Dsonar.login=$sonartoken
+                        '''
+                    }
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker Image'
-                sh '''
-                  cd Application
-                  docker build -t kadivetikavya/k8s:${BUILD_NUMBER} .
-                '''
+                dir("${APP_DIR}") {
+                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                }
             }
         }
 
         stage('Docker Image Scan') {
             steps {
                 sh '''
-                  trivy image kadivetikavya/k8s:${BUILD_NUMBER}
+                trivy image \
+                  --severity HIGH,CRITICAL \
+                  --exit-code 1 \
+                  --no-progress \
+                  --timeout 10m \
+                  ${IMAGE_NAME}:${BUILD_NUMBER}
                 '''
             }
         }
 
-        stage('Push Image to DockerHub') {
+        stage('Push to Docker Hub') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub', variable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
                     sh '''
-                      docker login -u kadivetikavya -p ${DOCKER_PASS}
-                      docker push kadivetikavya/k8s:${BUILD_NUMBER}
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push ${IMAGE_NAME}:${BUILD_NUMBER}
                     '''
                 }
-                echo 'Pushed to Docker Hub'
             }
         }
 
-        stage('Update Kubernetes Deployment Manifest File') {
-            environment {
-                GIT_REPO_NAME = "PROJECTS"
-                GIT_USER_NAME = "kadivetikavya"
-            }
+        stage('Update K8s Manifest') {
             steps {
-                withCredentials([string(credentialsId: 'githubtoken', variable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                      git config user.email "ka@gmail.com"
-                      git config user.name "kadivetikavya"
+                withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
+                    dir('ansible-k8s-CICD-project') {
+                        sh '''
+                        git config user.email "kadivetikavya@gmail.com"
+                        git config user.name "kadivetikavya"
 
-                      sed -i "s|image:.*|image: kadivetikavya/k8s:${BUILD_NUMBER}|g" \
-                      ansible-k8s-CICD-project/ansible/k8s_deployment.yaml
+                        git remote set-url origin https://${githubtoken}@github.com/kadivetikavya/PROJECTS.git
+                        git pull origin main --rebase
 
-                      git add .
-                      git commit -m "Update deployment image tag to ${BUILD_NUMBER}"
-                      git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git main
-                    '''
+                        sed -i "s|k8s:.*|k8s:${BUILD_NUMBER}|g" ansible/k8s_deployment.yaml
+
+                        git add ansible/k8s_deployment.yaml
+                        git commit -m "Update image tag to ${BUILD_NUMBER}" || echo "No changes to commit"
+                        git push origin main
+                        '''
+                    }
                 }
+            }
+        }
+
+        stage('Debug Ansible Paths') {
+            steps {
+                sh '''
+                pwd
+                ls -R ansible-k8s-CICD-project/ansible
+                '''
             }
         }
 
         stage('K8s Deployment using Ansible') {
             steps {
-                ansiblePlaybook(
-                    credentialsId: 'ssh',
-                    disableHostKeyChecking: true,
-                    installation: 'ansible',
-                    inventory: '/etc/ansible/hosts',
-                    playbook: 'ansible/ansible_k8s_deploy_playbook.yaml'
-                )
+                withCredentials([
+                    aws(credentialsId: 'aws-credentials', 
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    ansiblePlaybook(
+                        playbook: 'ansible-k8s-CICD-project/ansible/ansible_k8s_deploy_playbook.yaml',
+                        inventory: 'ansible-k8s-CICD-project/ansible/inventory',
+                        credentialsId: 'ssh',
+                        extraVars: [
+                            aws_access_key: [value: env.AWS_ACCESS_KEY_ID, hidden: true],
+                            aws_secret_key: [value: env.AWS_SECRET_ACCESS_KEY, hidden: true]
+                        ],
+                        disableHostKeyChecking: true
+                    )
+                }
             }
         }
     }
 }
+
 
 ```
 
@@ -628,7 +665,7 @@ exit
 Navigate to Ansible configuration directory:
 ```
 cd /etc/ansible
-sudo vim hosts
+sudo vim inventory
 ```
 Add the app server details:
 ```
@@ -639,9 +676,24 @@ appserver-publicip
 ### Test Ansible Connectivity
 Verify Ansible can connect to the app server:
 ```
-ansible -i hosts -m ping all
+ansible -i inventory -m ping all
 ```
 Expected result: SUCCESS✅
+
+### Pipeline Execution and Results
+Once the Jenkins pipeline is configured and triggered, it will execute each stage. The following images show a successful pipeline run.
+
+#### Jenkins Blue Ocean View
+The Blue Ocean interface provides a modern, visual representation of the pipeline flow, clearly showing the status of each stage.
+
+<img width="2136" height="691" alt="Screenshot 2026-01-28 164707" src="https://github.com/user-attachments/assets/57b5a735-4a55-4401-80c4-2ac343297170" />
+
+
+#### Jenkins Stage View
+The classic Stage View provides a summary of recent builds and the average time taken for each stage, which is useful for identifying bottlenecks.
+
+<img width="2130" height="790" alt="Screenshot 2026-01-28 164637" src="https://github.com/user-attachments/assets/aade3ece-0c2f-439f-88fb-8d892164e717" />
+
 
 ### Kubernetes Deployment with Ansible
 
@@ -653,17 +705,19 @@ Expected result: SUCCESS✅
 ### Accessing the Application
 Check all Kubernetes resources:
 ```
-kubectl get all
+kubectl get all -n ansiblek8s          #namespace
 ```
+
+<img width="1489" height="217" alt="Screenshot 2026-01-29 182301" src="https://github.com/user-attachments/assets/ed77d82f-24c6-4dfb-b29d-e14336b3b8ec" />
+
 Locate the LoadBalancer service and copy the external URL.<br>
 
 
 Example:
 ```
-a2a5e5f083b26430fadf920fe4f2a782-1459326598.us-east-1.elb.amazonaws.com
+http://adf1f5bcd753f43f1842eafd0fba4069-1375844474.us-east-1.elb.amazonaws.com
 ```
 Paste the LoadBalancer URL into your browser to access the application.
 
-
-
+<img width="1196" height="197" alt="Screenshot 2026-01-29 182447" src="https://github.com/user-attachments/assets/a5e52342-9ade-464b-a0a5-049df988f55a" />
 
