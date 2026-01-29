@@ -4,6 +4,7 @@
   become: yes
 
   tasks:
+
     - name: Ensure .kube directory exists
       file:
         path: /home/ec2-user/.kube
@@ -25,7 +26,21 @@
         owner: ec2-user
         mode: '0644'
 
+    - name: Install kubectl if not present
+      shell: |
+        if ! command -v kubectl &> /dev/null; then
+          curl -LO https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        fi
+
     - name: Apply Kubernetes deployment
-      command: kubectl apply -f /home/ec2-user/k8s_deployment.yaml
+      become_user: ec2-user
+      shell: kubectl apply -f /home/ec2-user/k8s_deployment.yaml
+      environment:
+        KUBECONFIG: /home/ec2-user/.kube/config
+
+    - name: Verify rollout status
+      become_user: ec2-user
+      shell: kubectl rollout status deployment/my-app
       environment:
         KUBECONFIG: /home/ec2-user/.kube/config
