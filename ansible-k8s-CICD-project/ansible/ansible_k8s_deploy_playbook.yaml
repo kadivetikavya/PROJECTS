@@ -3,32 +3,54 @@
   hosts: appserver
   gather_facts: false
   become: true
-
   vars:
     kubeconfig_path: "/home/ec2-user/.kube/config"
     k8s_namespace: "ansiblek8s"
     deployment_file: "/home/ec2-user/k8s_deployment.yaml"
     eks_cluster_name: "mycluster"
-
+    aws_region: "us-east-1"
+  
   tasks:
-
     - name: Ensure .kube directory exists
       file:
         path: /home/ec2-user/.kube
         state: directory
         owner: ec2-user
+        group: ec2-user
         mode: '0700'
 
-    # 🔹 ADD THIS TASK HERE
+    # 🔹 ADD THIS TASK - Configure AWS credentials
+    - name: Configure AWS credentials
+      shell: |
+        aws configure set aws_access_key_id {{ aws_access_key }}
+        aws configure set aws_secret_access_key {{ aws_secret_key }}
+        aws configure set region {{ aws_region }}
+      environment:
+        HOME: /home/ec2-user
+      become_user: ec2-user
+      no_log: true
+
     - name: Generate kubeconfig for EKS
       command: >
         aws eks update-kubeconfig
-        --region us-east-1
+        --region {{ aws_region }}
         --name {{ eks_cluster_name }}
         --kubeconfig {{ kubeconfig_path }}
       environment:
-        AWS_DEFAULT_REGION: us-east-1
+        HOME: /home/ec2-user
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
       become_user: ec2-user
+
+    - name: Verify kubectl configuration
+      command: kubectl config view
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ec2-user
+      register: kubectl_config
+
+    - name: Display kubeconfig
+      debug:
+        var: kubectl_config.stdout_lines
 
     - name: Copy Kubernetes deployment manifest
       copy:
@@ -37,15 +59,52 @@
         owner: ec2-user
         mode: '0644'
 
-    - name: Apply Kubernetes Deployment
-      command: kubectl apply -f {{ deployment_file }}
+    - name: Create namespace if it doesn't exist
+      command: kubectl create namespace {{ k8s_namespace }} --dry-run=client -o yaml | kubectl apply -f -
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
       become_user: ec2-user
+
+    - name: Apply Kubernetes Deployment
+      command: kubectl apply -f {{ deployment_file }} -n {{ k8s_namespace }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ec2-user
+      register: apply_output
+
+    - name: Display deployment output
+      debug:
+        var: apply_output.stdout_lines
 
     - name: Wait for deployment rollout
-      command: kubectl rollout status deployment/k8s -n {{ k8s_namespace }}
+      command: kubectl rollout status deployment/k8s -n {{ k8s_namespace }} --timeout=5m
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
       become_user: ec2-user
+      register: rollout_status
 
+    - name: Display rollout status
+      debug:
+        var: rollout_status.stdout_lines
+
+    - name: Get deployment status
+      command: kubectl get deployment k8s -n {{ k8s_namespace }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ec2-user
+      register: deployment_status
+
+    - name: Display deployment status
+      debug:
+        var: deployment_status.stdout_lines
+
+    - name: Get pods status
+      command: kubectl get pods -n {{ k8s_namespace }}
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      become_user: ec2-user
+      register: pods_status
+
+    - name: Display pods status
+      debug:
+        var: pods_status.stdout_lines
