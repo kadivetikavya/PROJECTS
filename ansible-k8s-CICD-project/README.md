@@ -1,13 +1,13 @@
 # Production-Ready DevSecOps Pipeline with Infrastructure as Code, Secrity Scanning & Ansible-Based Deployment
 
 ## Project Goals
-Infrastructure as Code (IaC): Provision and manage complete AWS infrastructure using Terraform for consistency, repeatability, and version control. <br>
-Version Control: Store and manage application and infrastructure code in Git to enable collaboration, tracking, and auditability. <br>
-Continuous Integration (CI): Automate build, test, and validation processes using Jenkins to detect issues early in the development cycle.<br>
-Static Code Analysis: Use SonarQube to continuously analyze code quality and identify bugs,vulnerabilities, and code smells.<br>
-Containerization: Package the application and its dependencies into Docker containers for a consistent and portable runtime environment.<br>
-Container Security: Scan Docker images with Trivy to detect and mitigate security vulnerabilities before deployment.<br>
-Continuous Deployment (CD): Automate deployment to a Kubernetes cluster using Ansible for reliable and controlled application releases.<br>
+1. Infrastructure as Code (IaC): Provision and manage complete AWS infrastructure using Terraform for consistency, repeatability, and version control. <br>
+2. Version Control: Store and manage application and infrastructure code in Git to enable collaboration, tracking, and auditability. <br>
+3. Continuous Integration (CI): Automate build, test, and validation processes using Jenkins to detect issues early in the development cycle.<br>
+4. Static Code Analysis: Use SonarQube to continuously analyze code quality and identify bugs,vulnerabilities, and code smells.<br>
+5. Containerization: Package the application and its dependencies into Docker containers for a consistent and portable runtime environment.<br>
+6. Container Security: Scan Docker images with Trivy to detect and mitigate security vulnerabilities before deployment.<br>
+7. Continuous Deployment (CD): Automate deployment to a Kubernetes cluster using Ansible for reliable and controlled application releases.<br>
 
 ## Project Overview
 The primary objective of this project is to establish a robust, end-to-end CI/CD pipeline that automates the process of building, testing, and deploying a Java application. By integrating a modern DevOps toolchain including Git, Jenkins, Maven, SonarQube, Docker, Trivy, Ansible, Terraform, and Amazon EKS, this project aims to achieve rapid, reliable, and secure software delivery.<br>
